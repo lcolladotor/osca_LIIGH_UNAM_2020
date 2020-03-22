@@ -11,14 +11,14 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Analyzing **scRNA-seq** data with **Bioconductor** for **LCG-EJ-UNAM** March 2020 <a href="https://bioconductor.org/"><img src="https://osca.bioconductor.org/cover.png" style="width: 20%"/></a>
+# Analyzing **scRNA-seq** data with **Bioconductor** for **LCG-EJ-UNAM** March 2020 <a href="https://bioconductor.org/"><img src="https://osca.bioconductor.org/cover.png" width="20%"/></a>
 
 <!-- badges: start -->
 <!-- badges: end -->
 
 Here you can find the files for the March 2020 single cell RNA-sequencing (scRNA-seq) course for [LCG-EJ-UNAM](https://lcgej.unam.mx/) at [LIIGH-UNAM](https://liigh.unam.mx/) based on the book [**Orchestrating Single Cell Analysis with Bioconductor**](https://osca.bioconductor.org/) by [Aaron Lun](https://www.linkedin.com/in/aaron-lun-869b5894/), [Robert Amezquita](https://robertamezquita.github.io/), [Stephanie Hicks](https://www.stephaniehicks.com/) and [Raphael Gottardo](http://rglab.org), plus [**WEHI's scRNA-seq course**](https://drive.google.com/drive/folders/1cn5d-Ey7-kkMiex8-74qxvxtCQT6o72h) by [Peter Hickey](https://www.peterhickey.org/).
 
-Instructor: [**Leonardo Collado-Torres](http://lcolladotor.github.io/).
+Instructor: [**Leonardo Collado-Torres**](http://lcolladotor.github.io/).
 
 
 ## Install required packages
@@ -49,7 +49,27 @@ BiocManager::install(c(
 1. [Multi-Sample Comparisons](11-multi-sample-comparisons.html)
 1. [Spatial Transcriptomics](12-spatial-transcriptomics.html)
 
-
 ## OSCA Workflow
 
 <a href="https://osca.bioconductor.org/"><img src="https://raw.githubusercontent.com/Bioconductor/OrchestratingSingleCellAnalysis/master/images/Workflow.png" /></a>
+
+
+## License
+
+This course is **free to use**, and is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivs 3.0 License](http://creativecommons.org/licenses/by-nc-nd/3.0/us/) just like the [**OSCA website**](https://osca.bioconductor.org/index.html).
+
+Download the materials for this course with `usethis::use_course('lcolladotor/osca_LIIGH_UNAM_2020')` or view online at [**lcolladotor.github.io/osca_LIIGH_UNAM_2020**](http://lcolladotor.github.io/osca_LIIGH_UNAM_2020).
+
+<script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=300&t=n&d=tq5q8216epOrQBSllNIKhXOHUHi-i38brzUURkQEiXw'></script>
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-161558379-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-161558379-1');
+</script>
+
