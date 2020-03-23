@@ -68,6 +68,181 @@ pre {
 }
 ```
 
+---
+
+# Slides by Peter Hickey
+
+View them [here](https://docs.google.com/presentation/d/1_tCNLiEsQ_TgsqHHf9_1lzXSaM_LunEHxBq3k130dQI/edit#slide=id.g7cc450648d_0_118)
+
+---
+
+# Code and output
+
+.scroll-output[
+
+```{r all_code, cache=TRUE}
+library('scRNAseq')
+sce.zeisel <- ZeiselBrainData(ensembl = TRUE)
+
+# Quality control
+library('scater')
+is.mito <- which(rowData(sce.zeisel)$featureType == "mito")
+stats <- perCellQCMetrics(sce.zeisel, subsets = list(Mt = is.mito))
+qc <-
+    quickPerCellQC(stats,
+        percent_subsets = c("altexps_ERCC_percent", "subsets_Mt_percent"))
+sce.zeisel <- sce.zeisel[, !qc$discard]
+```
+
+]
+
+---
+
+.scroll-output[
+
+```{r all_code2, cache=TRUE, dependson='all_code'}
+# Library size factors
+lib.sf.zeisel <- librarySizeFactors(sce.zeisel)
+
+# Examine distribution of size factors
+summary(lib.sf.zeisel)
+hist(log10(lib.sf.zeisel), xlab = "Log10[Size factor]", col = "grey80")
+ls.zeisel <- colSums(counts(sce.zeisel))
+plot(
+    ls.zeisel,
+    lib.sf.zeisel,
+    log = "xy",
+    xlab = "Library size",
+    ylab = "Size factor"
+)
+```
+
+]
+
+
+---
+
+# Exercise
+
+
+--
+
+* Are `ls.zeisel` and `lib.sf.zeisel` identical?
+
+--
+
+* Are they proportional?
+
+--
+
+* Compute `lib.sf.zeisel` manually
+
+
+---
+
+# Solution
+
+--
+
+* Check the **Details** at `?scater::librarySizeFactors`
+
+--
+
+* Compute the size factors manually
+
+```{r exercise_solution, cache=TRUE, dependson='all_code'}
+## First compute the sums
+zeisel_sums <- colSums(counts(sce.zeisel))
+identical(zeisel_sums, ls.zeisel)
+
+## Next, make them have unity mean
+zeisel_size_factors <- zeisel_sums/mean(zeisel_sums)
+identical(zeisel_size_factors, lib.sf.zeisel)
+```
+
+--
+
+* Check the [source code](https://github.com/davismcc/scater/blob/master/R/librarySizeFactors.R)
+
+---
+
+.scroll-output[
+
+```{r all_code3, cache=TRUE, dependson='all_code2'}
+# Normalization by convolution
+
+library('scran')
+# Pre-clustering
+set.seed(100)
+clust.zeisel <- quickCluster(sce.zeisel)
+# Compute deconvolution size factors
+deconv.sf.zeisel <-
+    calculateSumFactors(sce.zeisel, clusters = clust.zeisel, min.mean = 0.1)
+
+# Examine distribution of size factors
+summary(deconv.sf.zeisel)
+hist(log10(deconv.sf.zeisel), xlab = "Log10[Size factor]",
+    col = "grey80")
+plot(
+    ls.zeisel,
+    deconv.sf.zeisel,
+    log = "xy",
+    xlab = "Library size",
+    ylab = "Size factor"
+)
+```
+
+]
+
+---
+
+# Exercises
+
+--
+
+* How many quick clusters did we get? 
+
+--
+
+* How many cells per quick cluster did we get?
+
+--
+
+* How many quick clusters will we get if we set the minimum size to 200? Use 100 as the seed.
+
+--
+
+* How many lines do you see?
+
+
+???
+
+* 12
+* From 113 to 325, `sort(table(clust.zeisel))`
+* 10 `set.seed(100); sort(table(quickCluster(sce.zeisel, min.size = 200)))` 
+* Several ones near the diagonal. They are potentially 7 `table(factor(sce.zeisel$level1class))`
+
+---
+
+.scroll-output[
+
+```{r all_code4, cache=TRUE, dependson='all_code3'}
+# Library size factors vs. convolution size factors
+
+# Colouring points using the supplied cell-types
+plot(
+    lib.sf.zeisel,
+    deconv.sf.zeisel,
+    xlab = "Library size factor",
+    ylab = "Deconvolution size factor",
+    log = 'xy',
+    pch = 16,
+    col = as.integer(factor(sce.zeisel$level1class))
+)
+abline(a = 0, b = 1, col = "red")
+```
+
+]
 
 ---
 
