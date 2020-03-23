@@ -4,7 +4,7 @@
     <title>Introduction</title>
     <meta charset="utf-8" />
     <meta name="author" content="Leonardo Collado-Torres" />
-    <meta name="date" content="2020-03-22" />
+    <meta name="date" content="2020-03-23" />
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-161558379-1"></script>
     <script>
@@ -23,7 +23,7 @@ class: center, middle, inverse, title-slide
 # <strong>Introduction</strong>
 ## Analyzing <strong>scRNA-seq</strong> data with <strong>Bioconductor</strong> for <strong>LCG-EJ-UNAM</strong> March 2020
 ### <a href="http://lcolladotor.github.io/">Leonardo Collado-Torres</a>
-### 2020-03-22
+### 2020-03-23
 
 ---
 
@@ -53,6 +53,12 @@ class: inverse
   overflow-y: scroll;
 }
 
+/* https://stackoverflow.com/questions/50919104/horizontally-scrollable-output-on-xaringan-slides */
+pre {
+  max-width: 100%;
+  overflow-x: scroll;
+}
+
 /* From https://github.com/yihui/xaringan/wiki/Font-Size */
 .tiny{
   font-size: 40%
@@ -65,6 +71,384 @@ class: inverse
   background-position: 0% 100%
 }
 &lt;/style&gt;
+
+---
+
+# Course origins
+
+--
+
+* [**Orchestrating Single Cell Analysis With Bioconductor**](ohttps://osca.bioconductor.org/) book by [Aaron Lun](https://www.linkedin.com/in/aaron-lun-869b5894/), [Robert Amezquita](https://robertamezquita.github.io/), [Stephanie Hicks](https://www.stephaniehicks.com/) and [Raphael Gottardo](http://rglab.org)
+
+--
+
+Amezquita, R.A., Lun, A.T.L., Becht, E. et al. Orchestrating single-cell analysis with Bioconductor. _Nat Methods_ 17, 137–145 (2020). DOI: [10.1038/s41592-019-0654-x](https://doi.org/10.1038/s41592-019-0654-x)
+
+--
+
+* [**WEHI's scRNA-seq course**](https://drive.google.com/drive/folders/1cn5d-Ey7-kkMiex8-74qxvxtCQT6o72h) by [Peter Hickey](https://www.peterhickey.org/)
+
+---
+
+class: center, middle
+
+# Instructor
+
+
+
+
+**Leonardo Collado-Torres**
+
+
+&lt;img src="http://lcolladotor.github.io/authors/admin/avatar_hub730ffb954e879fe0ab174cacb839b41_1326712_270x270_fill_lanczos_center_2.png" /&gt;
+
+* Website: [lcolladotor.github.io](http://lcolladotor.github.io)
+* Twitter: [fellgernon](https://twitter.com/fellgernon)
+
+---
+
+background-image: url(img/01-intro/Slide1.png)
+background-size: 100%
+
+---
+
+background-image: url(img/01-intro/Slide2.png)
+background-size: 100%
+
+---
+
+background-image: url(img/01-intro/Slide3.png)
+background-size: 100%
+
+---
+
+background-image: url(img/01-intro/Slide4.png)
+background-size: 100%
+
+---
+
+# Course Prerequisites
+
+.scroll-output[
+
+Install R 3.6.x from [CRAN](https://cran.r-project.org/) then install the following R packages:
+
+
+```r
+## For installing Bioconductor packages
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+## Install required packages
+BiocManager::install(
+    c(
+        'SingleCellExperiment',
+        'usethis',
+        'here',
+        'scran',
+        'scater',
+        'scRNAseq',
+        'org.Mm.eg.db',
+        'AnnotationHub',
+        'ExperimentHub',
+        'BiocFileCache',
+        'DropletUtils',
+        'EnsDb.Hsapiens.v86',
+        'TENxPBMCData',
+        'BiocSingular',
+        'batchelor',
+        'uwot',
+        'Rtsne',
+        'pheatmap',
+        'fossil',
+        'ggplot2',
+        'cowplot',
+        'RColorBrewer',
+        'plotly',
+        'iSEE',
+        'pryr',
+        'LieberInstitute/spatialLIBD',
+        'sessioninfo'
+    )
+)
+```
+
+You will also need to install [RStudio](https://rstudio.com/products/rstudio/download/#download) version 1.2.5 or newer.
+
+]
+
+
+---
+
+
+
+# Course Materials
+
+--
+
+* Download them with `usethis::use_course('lcolladotor/osca_LIIGH_UNAM_2020')`
+
+--
+
+* View online at [**lcolladotor.github.io/osca_LIIGH_UNAM_2020**](http://lcolladotor.github.io/osca_LIIGH_UNAM_2020)
+
+--
+
+* **Clone** the GitHub repository, which will make it easy for you to download the latest version with *git pull*
+
+
+```bash
+## If you have SSH keys enabled
+git clone git@github.com:lcolladotor/osca_LIIGH_UNAM_2020.git
+
+## or
+git clone https://github.com/lcolladotor/osca_LIIGH_UNAM_2020.git
+```
+
+From R:
+
+
+```r
+git2r::clone('https://github.com/lcolladotor/osca_LIIGH_UNAM_2020',
+    'osca_LIIGH_UNAM_2020')
+```
+
+---
+
+# Create your own project
+
+I recommend that you create your own project and version control it
+
+
+```r
+usethis::create_project('~/Desktop/osca_playground_leo')
+```
+
+
+```r
+## Start a setup file
+usethis::use_r('00-setup.R')
+```
+
+Inside the setup script, save the commands to
+
+
+```r
+## Start git repo
+usethis::use_git()
+
+## Use GitHub
+usethis::browse_github_token()
+usethis::edit_r_environ() ## then restart R
+usethis::use_github() ## commit first, then run this command
+
+## Start 01-intro notes
+usethis::use_r('01-introduction.R')
+```
+
+Example at [**osca_playground_leo**](https://github.com/lcolladotor/osca_playground_leo/blob/master/R/00-setup.R)
+
+---
+
+# Class schedule
+
+
+| Time | Activity |
+| ---: | :--- |
+| 9:00-9:50 | class |
+| 9:50 - 10:00 | break |
+| 10:00-10:50 | class |
+| 10:50 - 11:30 | lunch break |
+| 11:30 - 12:20 | class |
+| 12:20 - 12:30 | break |
+| 12:30 - 13:20 | class |
+| 13:20 - 13:30 | break |
+| 13:30 - 14:00 | class wrap up |
+
+* Timezone: Central Mexico
+* Days: Tuesday March 24 to Friday March 27
+
+---
+
+# Asking for help
+
+--
+
+* Use the "raise your **hand**" feature in Zoom
+
+--
+
+* Create an **issue** at [osca_LIIGH_UNAM_2020](https://github.com/lcolladotor/osca_LIIGH_UNAM_2020/issues). Remember to include a reproducible example!
+
+--
+
+* More generally, through the [**Bioconductor Support Website**](https://support.bioconductor.org/) tagging the appropriate package.
+
+--
+
+* Related blog posts: [**How to ask for help for Bioconductor packages**](http://lcolladotor.github.io/2017/03/06/how-to-ask-for-help-for-bioconductor-packages/#.XnjLRNNKh0s), [**Asking for help is challenging but is typically worth it**](http://lcolladotor.github.io/2018/11/12/asking-for-help-is-challenging-but-is-typically-worth-it/#.XnjLf9NKh0s), and [**Learning from our search history**](http://lcolladotor.github.io/2020/02/12/learning-from-our-search-history/)
+
+--
+
+* Related `rstudio::conf(2020)` keynote by [Jenny Bryan](https://twitter.com/JennyBryan): [**Object of type ‘closure’ is not subsettable**](https://resources.rstudio.com/rstudio-conf-2020/object-of-type-closure-is-not-subsettable-jenny-bryan) 
+
+---
+
+background-image: url(https://github.com/Bioconductor/OrchestratingSingleCellAnalysis/raw/master/images/cover.png)
+background-size: contain
+
+---
+
+background-image: url(https://github.com/Bioconductor/OrchestratingSingleCellAnalysis/raw/master/images/SingleCellExperiment.png)
+background-size: contain
+
+---
+
+background-image: url(https://github.com/Bioconductor/OrchestratingSingleCellAnalysis/raw/master/images/Workflow.png)
+background-size: contain
+
+
+---
+
+background-image: url(http://research.libd.org/spatialLIBD/reference/figures/README-access_data-1.png)
+background-size: contain
+
+---
+
+# Quick Introduction: [OSCA](https://osca.bioconductor.org/overview.html#quick-start)
+
+
+
+```r
+library('scRNAseq')
+library('scater')
+library('scran')
+library('plotly')
+```
+
+---
+
+.scroll-output[
+
+
+```r
+sce &lt;- scRNAseq::MacoskoRetinaData()
+```
+
+```
+## snapshotDate(): 2019-10-22
+```
+
+```
+## see ?scRNAseq and browseVignettes('scRNAseq') for documentation
+```
+
+```
+## loading from cache
+```
+
+```
+## see ?scRNAseq and browseVignettes('scRNAseq') for documentation
+```
+
+```
+## loading from cache
+```
+
+```r
+## How big is the data?
+pryr::object_size(sce)
+```
+
+```
+## Registered S3 method overwritten by 'pryr':
+##   method      from
+##   print.bytes Rcpp
+```
+
+```
+## 461 MB
+```
+
+```r
+## How does it look?
+sce
+```
+
+```
+## class: SingleCellExperiment 
+## dim: 24658 49300 
+## metadata(0):
+## assays(1): counts
+## rownames(24658): KITL TMTC3 ... 1110059M19RIK GM20861
+## rowData names(0):
+## colnames(49300): r1_GGCCGCAGTCCG r1_CTTGTGCGGGAA ... p1_TAACGCGCTCCT
+##   p1_ATTCTTGTTCTT
+## colData names(2): cell.id cluster
+## reducedDimNames(0):
+## spikeNames(0):
+## altExpNames(0):
+```
+
+]
+
+---
+
+.scroll-output[
+
+
+```r
+# Quality control.
+is.mito &lt;- grepl("^MT-", rownames(sce))
+qcstats &lt;-
+    scater::perCellQCMetrics(sce, subsets = list(Mito = is.mito))
+filtered &lt;-
+    scater::quickPerCellQC(qcstats, percent_subsets = "subsets_Mito_percent")
+sce &lt;- sce[, !filtered$discard]
+
+# Normalization.
+sce &lt;- scater::logNormCounts(sce)
+
+# Feature selection.
+dec &lt;- scran::modelGeneVar(sce)
+hvg &lt;- scran::getTopHVGs(dec, prop = 0.1)
+
+# Dimensionality reduction.
+set.seed(1234)
+sce &lt;- scater::runPCA(sce, ncomponents = 25, subset_row = hvg)
+sce &lt;- scater::runUMAP(sce, dimred = 'PCA', external_neighbors = TRUE)
+
+# Clustering.
+g &lt;- scran::buildSNNGraph(sce, use.dimred = 'PCA')
+sce$clusters &lt;- factor(igraph::cluster_louvain(g)$membership)
+```
+
+]
+
+
+---
+
+
+```r
+# Visualization.
+scater::plotUMAP(sce, colour_by = "clusters")
+```
+
+![](01-introduction_files/figure-html/quick_intro_04-1.png)&lt;!-- --&gt;
+
+---
+
+
+```r
+# Interactive visualization
+p &lt;- scater::plotUMAP(sce, colour_by = "clusters")
+plotly::ggplotly(p)
+```
+
+
+
+
+
 
 
 ---
@@ -110,57 +494,122 @@ sessioninfo::session_info()
 ##  version  R version 3.6.3 (2020-02-29)
 ##  os       macOS Catalina 10.15.3      
 ##  system   x86_64, darwin15.6.0        
-##  ui       RStudio                     
+##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/New_York            
-##  date     2020-03-22                  
+##  date     2020-03-23                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
-##  package        * version date       lib source                                   
-##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 3.6.0)                           
-##  backports        1.1.5   2019-10-02 [1] CRAN (R 3.6.0)                           
-##  callr            3.4.2   2020-02-12 [1] CRAN (R 3.6.0)                           
-##  cli              2.0.2   2020-02-28 [1] CRAN (R 3.6.0)                           
-##  colorout       * 1.2-1   2019-05-07 [1] Github (jalvesaq/colorout@7ea9440)       
-##  crayon           1.3.4   2017-09-16 [1] CRAN (R 3.6.0)                           
-##  desc             1.2.0   2018-05-01 [1] CRAN (R 3.6.0)                           
-##  devtools       * 2.2.2   2020-02-17 [1] CRAN (R 3.6.0)                           
-##  digest           0.6.25  2020-02-23 [1] CRAN (R 3.6.0)                           
-##  ellipsis         0.3.0   2019-09-20 [1] CRAN (R 3.6.0)                           
-##  evaluate         0.14    2019-05-28 [1] CRAN (R 3.6.0)                           
-##  fansi            0.4.1   2020-01-08 [1] CRAN (R 3.6.0)                           
-##  fs               1.3.2   2020-03-05 [1] CRAN (R 3.6.0)                           
-##  glue             1.3.2   2020-03-12 [1] CRAN (R 3.6.0)                           
-##  htmltools        0.4.0   2019-10-04 [1] CRAN (R 3.6.0)                           
-##  knitr            1.28    2020-02-06 [1] CRAN (R 3.6.0)                           
-##  magrittr         1.5     2014-11-22 [1] CRAN (R 3.6.0)                           
-##  memoise          1.1.0   2017-04-21 [1] CRAN (R 3.6.0)                           
-##  packrat          0.5.0   2018-11-14 [1] CRAN (R 3.6.0)                           
-##  pkgbuild         1.0.6   2019-10-09 [1] CRAN (R 3.6.0)                           
-##  pkgload          1.0.2   2018-10-29 [1] CRAN (R 3.6.0)                           
-##  prettyunits      1.1.1   2020-01-24 [1] CRAN (R 3.6.2)                           
-##  processx         3.4.2   2020-02-09 [1] CRAN (R 3.6.0)                           
-##  ps               1.3.2   2020-02-13 [1] CRAN (R 3.6.0)                           
-##  R6               2.4.1   2019-11-12 [1] CRAN (R 3.6.1)                           
-##  Rcpp             1.0.3   2019-11-08 [1] CRAN (R 3.6.0)                           
-##  remotes          2.1.1   2020-02-15 [1] CRAN (R 3.6.0)                           
-##  rlang            0.4.5   2020-03-01 [1] CRAN (R 3.6.0)                           
-##  rmarkdown        2.1     2020-01-20 [1] CRAN (R 3.6.0)                           
-##  rprojroot        1.3-2   2018-01-03 [1] CRAN (R 3.6.0)                           
-##  rsconnect        0.8.16  2019-12-13 [1] CRAN (R 3.6.2)                           
-##  rstudioapi       0.11    2020-02-07 [1] CRAN (R 3.6.0)                           
-##  sessioninfo      1.1.1   2018-11-05 [1] CRAN (R 3.6.0)                           
-##  stringi          1.4.6   2020-02-17 [1] CRAN (R 3.6.0)                           
-##  stringr          1.4.0   2019-02-10 [1] CRAN (R 3.6.0)                           
-##  testthat       * 2.3.2   2020-03-02 [1] CRAN (R 3.6.2)                           
-##  usethis        * 1.5.1   2019-07-04 [1] CRAN (R 3.6.0)                           
-##  withr            2.1.2   2018-03-15 [1] CRAN (R 3.6.0)                           
-##  xaringan         0.15    2020-03-04 [1] CRAN (R 3.6.3)                           
-##  xaringanthemer * 0.2.0   2020-03-22 [1] Github (gadenbuie/xaringanthemer@460f441)
-##  xfun             0.12    2020-01-13 [1] CRAN (R 3.6.0)                           
-##  yaml             2.2.1   2020-02-01 [1] CRAN (R 3.6.0)                           
+##  package                * version  date       lib source                                   
+##  AnnotationDbi            1.48.0   2019-10-29 [1] Bioconductor                             
+##  AnnotationHub            2.18.0   2019-10-29 [1] Bioconductor                             
+##  assertthat               0.2.1    2019-03-21 [1] CRAN (R 3.6.0)                           
+##  beeswarm                 0.2.3    2016-04-25 [1] CRAN (R 3.6.0)                           
+##  Biobase                * 2.46.0   2019-10-29 [1] Bioconductor                             
+##  BiocFileCache            1.10.2   2019-11-08 [1] Bioconductor                             
+##  BiocGenerics           * 0.32.0   2019-10-29 [1] Bioconductor                             
+##  BiocManager              1.30.10  2019-11-16 [1] CRAN (R 3.6.1)                           
+##  BiocNeighbors            1.4.2    2020-02-29 [1] Bioconductor                             
+##  BiocParallel           * 1.20.1   2019-12-21 [1] Bioconductor                             
+##  BiocSingular             1.2.2    2020-02-14 [1] Bioconductor                             
+##  BiocVersion              3.10.1   2019-06-06 [1] Bioconductor                             
+##  bit                      1.1-15.2 2020-02-10 [1] CRAN (R 3.6.0)                           
+##  bit64                    0.9-7    2017-05-08 [1] CRAN (R 3.6.0)                           
+##  bitops                   1.0-6    2013-08-17 [1] CRAN (R 3.6.0)                           
+##  blob                     1.2.1    2020-01-20 [1] CRAN (R 3.6.0)                           
+##  cli                      2.0.2    2020-02-28 [1] CRAN (R 3.6.0)                           
+##  colorout               * 1.2-1    2019-05-07 [1] Github (jalvesaq/colorout@7ea9440)       
+##  colorspace               1.4-1    2019-03-18 [1] CRAN (R 3.6.0)                           
+##  cowplot                  1.0.0    2019-07-11 [1] CRAN (R 3.6.0)                           
+##  crayon                   1.3.4    2017-09-16 [1] CRAN (R 3.6.0)                           
+##  curl                     4.3      2019-12-02 [1] CRAN (R 3.6.0)                           
+##  data.table               1.12.8   2019-12-09 [1] CRAN (R 3.6.1)                           
+##  DBI                      1.1.0    2019-12-15 [1] CRAN (R 3.6.0)                           
+##  dbplyr                   1.4.2    2019-06-17 [1] CRAN (R 3.6.0)                           
+##  DelayedArray           * 0.12.2   2020-01-06 [1] Bioconductor                             
+##  DelayedMatrixStats       1.8.0    2019-10-29 [1] Bioconductor                             
+##  digest                   0.6.25   2020-02-23 [1] CRAN (R 3.6.0)                           
+##  dplyr                    0.8.5    2020-03-07 [1] CRAN (R 3.6.0)                           
+##  dqrng                    0.2.1    2019-05-17 [1] CRAN (R 3.6.0)                           
+##  edgeR                    3.28.1   2020-02-26 [1] Bioconductor                             
+##  evaluate                 0.14     2019-05-28 [1] CRAN (R 3.6.0)                           
+##  ExperimentHub            1.12.0   2019-10-29 [1] Bioconductor                             
+##  fansi                    0.4.1    2020-01-08 [1] CRAN (R 3.6.0)                           
+##  farver                   2.0.3    2020-01-16 [1] CRAN (R 3.6.0)                           
+##  fastmap                  1.0.1    2019-10-08 [1] CRAN (R 3.6.0)                           
+##  GenomeInfoDb           * 1.22.0   2019-10-29 [1] Bioconductor                             
+##  GenomeInfoDbData         1.2.2    2019-10-31 [1] Bioconductor                             
+##  GenomicRanges          * 1.38.0   2019-10-29 [1] Bioconductor                             
+##  ggbeeswarm               0.6.0    2017-08-07 [1] CRAN (R 3.6.0)                           
+##  ggplot2                * 3.3.0    2020-03-05 [1] CRAN (R 3.6.0)                           
+##  glue                     1.3.2    2020-03-12 [1] CRAN (R 3.6.0)                           
+##  gridExtra                2.3      2017-09-09 [1] CRAN (R 3.6.0)                           
+##  gtable                   0.3.0    2019-03-25 [1] CRAN (R 3.6.0)                           
+##  htmltools                0.4.0    2019-10-04 [1] CRAN (R 3.6.0)                           
+##  htmlwidgets              1.5.1    2019-10-08 [1] CRAN (R 3.6.0)                           
+##  httpuv                   1.5.2    2019-09-11 [1] CRAN (R 3.6.0)                           
+##  httr                     1.4.1    2019-08-05 [1] CRAN (R 3.6.0)                           
+##  igraph                   1.2.5    2020-03-19 [1] CRAN (R 3.6.0)                           
+##  interactiveDisplayBase   1.24.0   2019-10-29 [1] Bioconductor                             
+##  IRanges                * 2.20.2   2020-01-13 [1] Bioconductor                             
+##  irlba                    2.3.3    2019-02-05 [1] CRAN (R 3.6.0)                           
+##  jsonlite                 1.6.1    2020-02-02 [1] CRAN (R 3.6.0)                           
+##  knitr                    1.28     2020-02-06 [1] CRAN (R 3.6.0)                           
+##  labeling                 0.3      2014-08-23 [1] CRAN (R 3.6.0)                           
+##  later                    1.0.0    2019-10-04 [1] CRAN (R 3.6.0)                           
+##  lattice                  0.20-40  2020-02-19 [1] CRAN (R 3.6.0)                           
+##  lazyeval                 0.2.2    2019-03-15 [1] CRAN (R 3.6.0)                           
+##  lifecycle                0.2.0    2020-03-06 [1] CRAN (R 3.6.0)                           
+##  limma                    3.42.2   2020-02-03 [1] Bioconductor                             
+##  locfit                   1.5-9.1  2013-04-20 [1] CRAN (R 3.6.0)                           
+##  magrittr                 1.5      2014-11-22 [1] CRAN (R 3.6.0)                           
+##  Matrix                   1.2-18   2019-11-27 [1] CRAN (R 3.6.3)                           
+##  matrixStats            * 0.56.0   2020-03-13 [1] CRAN (R 3.6.0)                           
+##  memoise                  1.1.0    2017-04-21 [1] CRAN (R 3.6.0)                           
+##  mime                     0.9      2020-02-04 [1] CRAN (R 3.6.0)                           
+##  munsell                  0.5.0    2018-06-12 [1] CRAN (R 3.6.0)                           
+##  pillar                   1.4.3    2019-12-20 [1] CRAN (R 3.6.0)                           
+##  pkgconfig                2.0.3    2019-09-22 [1] CRAN (R 3.6.1)                           
+##  plotly                 * 4.9.2    2020-02-12 [1] CRAN (R 3.6.0)                           
+##  promises                 1.1.0    2019-10-04 [1] CRAN (R 3.6.0)                           
+##  purrr                    0.3.3    2019-10-18 [1] CRAN (R 3.6.0)                           
+##  R6                       2.4.1    2019-11-12 [1] CRAN (R 3.6.1)                           
+##  rappdirs                 0.3.1    2016-03-28 [1] CRAN (R 3.6.0)                           
+##  Rcpp                     1.0.4    2020-03-17 [1] CRAN (R 3.6.0)                           
+##  RCurl                    1.98-1.1 2020-01-19 [1] CRAN (R 3.6.0)                           
+##  rlang                    0.4.5    2020-03-01 [1] CRAN (R 3.6.0)                           
+##  rmarkdown                2.1      2020-01-20 [1] CRAN (R 3.6.0)                           
+##  RSQLite                  2.2.0    2020-01-07 [1] CRAN (R 3.6.0)                           
+##  rsvd                     1.0.3    2020-02-17 [1] CRAN (R 3.6.0)                           
+##  S4Vectors              * 0.24.3   2020-01-18 [1] Bioconductor                             
+##  scales                   1.1.0    2019-11-18 [1] CRAN (R 3.6.1)                           
+##  scater                 * 1.14.6   2019-12-16 [1] Bioconductor                             
+##  scran                  * 1.14.6   2020-02-03 [1] Bioconductor                             
+##  scRNAseq               * 2.0.2    2019-11-12 [1] Bioconductor                             
+##  sessioninfo              1.1.1    2018-11-05 [1] CRAN (R 3.6.0)                           
+##  shiny                    1.4.0.2  2020-03-13 [1] CRAN (R 3.6.0)                           
+##  SingleCellExperiment   * 1.8.0    2019-10-29 [1] Bioconductor                             
+##  statmod                  1.4.34   2020-02-17 [1] CRAN (R 3.6.0)                           
+##  stringi                  1.4.6    2020-02-17 [1] CRAN (R 3.6.0)                           
+##  stringr                  1.4.0    2019-02-10 [1] CRAN (R 3.6.0)                           
+##  SummarizedExperiment   * 1.16.1   2019-12-19 [1] Bioconductor                             
+##  tibble                   2.1.3    2019-06-06 [1] CRAN (R 3.6.0)                           
+##  tidyr                    1.0.2    2020-01-24 [1] CRAN (R 3.6.2)                           
+##  tidyselect               1.0.0    2020-01-27 [1] CRAN (R 3.6.0)                           
+##  vctrs                    0.2.4    2020-03-10 [1] CRAN (R 3.6.0)                           
+##  vipor                    0.4.5    2017-03-22 [1] CRAN (R 3.6.0)                           
+##  viridis                  0.5.1    2018-03-29 [1] CRAN (R 3.6.0)                           
+##  viridisLite              0.3.0    2018-02-01 [1] CRAN (R 3.6.0)                           
+##  withr                    2.1.2    2018-03-15 [1] CRAN (R 3.6.0)                           
+##  xaringan                 0.15     2020-03-04 [1] CRAN (R 3.6.3)                           
+##  xaringanthemer         * 0.2.0    2020-03-22 [1] Github (gadenbuie/xaringanthemer@460f441)
+##  xfun                     0.12     2020-01-13 [1] CRAN (R 3.6.0)                           
+##  xtable                   1.8-4    2019-04-21 [1] CRAN (R 3.6.0)                           
+##  XVector                  0.26.0   2019-10-29 [1] Bioconductor                             
+##  yaml                     2.2.1    2020-02-01 [1] CRAN (R 3.6.0)                           
+##  zlibbioc                 1.32.0   2019-10-29 [1] Bioconductor                             
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```

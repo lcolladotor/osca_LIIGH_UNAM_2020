@@ -49,6 +49,12 @@ class: inverse
   overflow-y: scroll;
 }
 
+/* https://stackoverflow.com/questions/50919104/horizontally-scrollable-output-on-xaringan-slides */
+pre {
+  max-width: 100%;
+  overflow-x: scroll;
+}
+
 /* From https://github.com/yihui/xaringan/wiki/Font-Size */
 .tiny{
   font-size: 40%

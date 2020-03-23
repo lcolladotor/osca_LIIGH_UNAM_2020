@@ -23,7 +23,10 @@ by [Peter Hickey](https://www.peterhickey.org/).
 Instructor: [**Leonardo
 Collado-Torres**](http://lcolladotor.github.io/).
 
-## Install required packages
+## Course Prerequisites
+
+Install R 3.6.x from [CRAN](https://cran.r-project.org/) then install
+the following R packages:
 
 ``` r
 ## For installing Bioconductor packages
@@ -31,10 +34,42 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
 ## Install required packages
-BiocManager::install(c(
-    'SingleCellExperiment'
-))
+BiocManager::install(
+    c(
+        'SingleCellExperiment',
+        'usethis',
+        'here',
+        'scran',
+        'scater',
+        'scRNAseq',
+        'org.Mm.eg.db',
+        'AnnotationHub',
+        'ExperimentHub',
+        'BiocFileCache',
+        'DropletUtils',
+        'EnsDb.Hsapiens.v86',
+        'TENxPBMCData',
+        'BiocSingular',
+        'batchelor',
+        'uwot',
+        'Rtsne',
+        'pheatmap',
+        'fossil',
+        'ggplot2',
+        'cowplot',
+        'RColorBrewer',
+        'plotly',
+        'iSEE',
+        'pryr',
+        'LieberInstitute/spatialLIBD',
+        'sessioninfo'
+    )
+)
 ```
+
+You will also need to install
+[RStudio](https://rstudio.com/products/rstudio/download/#download)
+version 1.2.5 or newer.
 
 ## Course files
 

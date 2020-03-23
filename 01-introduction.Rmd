@@ -49,6 +49,12 @@ class: inverse
   overflow-y: scroll;
 }
 
+/* https://stackoverflow.com/questions/50919104/horizontally-scrollable-output-on-xaringan-slides */
+pre {
+  max-width: 100%;
+  overflow-x: scroll;
+}
+
 /* From https://github.com/yihui/xaringan/wiki/Font-Size */
 .tiny{
   font-size: 40%
@@ -61,6 +67,336 @@ class: inverse
   background-position: 0% 100%
 }
 ```
+
+---
+
+# Course origins
+
+--
+
+* [**Orchestrating Single Cell Analysis With Bioconductor**](ohttps://osca.bioconductor.org/) book by [Aaron Lun](https://www.linkedin.com/in/aaron-lun-869b5894/), [Robert Amezquita](https://robertamezquita.github.io/), [Stephanie Hicks](https://www.stephaniehicks.com/) and [Raphael Gottardo](http://rglab.org)
+
+--
+
+Amezquita, R.A., Lun, A.T.L., Becht, E. et al. Orchestrating single-cell analysis with Bioconductor. _Nat Methods_ 17, 137–145 (2020). DOI: [10.1038/s41592-019-0654-x](https://doi.org/10.1038/s41592-019-0654-x)
+
+--
+
+* [**WEHI's scRNA-seq course**](https://drive.google.com/drive/folders/1cn5d-Ey7-kkMiex8-74qxvxtCQT6o72h) by [Peter Hickey](https://www.peterhickey.org/)
+
+---
+
+class: center, middle
+
+# Instructor
+
+
+
+
+**Leonardo Collado-Torres**
+
+
+<img src="http://lcolladotor.github.io/authors/admin/avatar_hub730ffb954e879fe0ab174cacb839b41_1326712_270x270_fill_lanczos_center_2.png" />
+
+* Website: [lcolladotor.github.io](http://lcolladotor.github.io)
+* Twitter: [fellgernon](https://twitter.com/fellgernon)
+
+---
+
+background-image: url(img/01-intro/Slide1.png)
+background-size: 100%
+
+---
+
+background-image: url(img/01-intro/Slide2.png)
+background-size: 100%
+
+---
+
+background-image: url(img/01-intro/Slide3.png)
+background-size: 100%
+
+---
+
+background-image: url(img/01-intro/Slide4.png)
+background-size: 100%
+
+---
+
+# Course Prerequisites
+
+.scroll-output[
+
+Install R 3.6.x from [CRAN](https://cran.r-project.org/) then install the following R packages:
+
+```{r install, eval = FALSE}
+## For installing Bioconductor packages
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+## Install required packages
+BiocManager::install(
+    c(
+        'SingleCellExperiment',
+        'usethis',
+        'here',
+        'scran',
+        'scater',
+        'scRNAseq',
+        'org.Mm.eg.db',
+        'AnnotationHub',
+        'ExperimentHub',
+        'BiocFileCache',
+        'DropletUtils',
+        'EnsDb.Hsapiens.v86',
+        'TENxPBMCData',
+        'BiocSingular',
+        'batchelor',
+        'uwot',
+        'Rtsne',
+        'pheatmap',
+        'fossil',
+        'ggplot2',
+        'cowplot',
+        'RColorBrewer',
+        'plotly',
+        'iSEE',
+        'pryr',
+        'LieberInstitute/spatialLIBD',
+        'sessioninfo'
+    )
+)
+```
+
+You will also need to install [RStudio](https://rstudio.com/products/rstudio/download/#download) version 1.2.5 or newer.
+
+]
+
+
+---
+
+
+
+# Course Materials
+
+--
+
+* Download them with `usethis::use_course('lcolladotor/osca_LIIGH_UNAM_2020')`
+
+--
+
+* View online at [**lcolladotor.github.io/osca_LIIGH_UNAM_2020**](http://lcolladotor.github.io/osca_LIIGH_UNAM_2020)
+
+--
+
+* **Clone** the GitHub repository, which will make it easy for you to download the latest version with *git pull*
+
+```{bash clone_course, eval = FALSE}
+## If you have SSH keys enabled
+git clone git@github.com:lcolladotor/osca_LIIGH_UNAM_2020.git
+
+## or
+git clone https://github.com/lcolladotor/osca_LIIGH_UNAM_2020.git
+```
+
+From R:
+
+```{r clone_repo, eval = FALSE}
+git2r::clone('https://github.com/lcolladotor/osca_LIIGH_UNAM_2020',
+    'osca_LIIGH_UNAM_2020')
+```
+
+---
+
+# Create your own project
+
+I recommend that you create your own project and version control it
+
+```{r proj, eval = FALSE}
+usethis::create_project('~/Desktop/osca_playground_leo')
+```
+
+```{r create_setup, eval = FALSE}
+## Start a setup file
+usethis::use_r('00-setup.R')
+```
+
+Inside the setup script, save the commands to
+
+```{r use_git, eval = FALSE}
+## Start git repo
+usethis::use_git()
+
+## Use GitHub
+usethis::browse_github_token()
+usethis::edit_r_environ() ## then restart R
+usethis::use_github() ## commit first, then run this command
+
+## Start 01-intro notes
+usethis::use_r('01-introduction.R')
+```
+
+Example at [**osca_playground_leo**](https://github.com/lcolladotor/osca_playground_leo/blob/master/R/00-setup.R)
+
+---
+
+# Class schedule
+
+
+| Time | Activity |
+| ---: | :--- |
+| 9:00-9:50 | class |
+| 9:50 - 10:00 | break |
+| 10:00-10:50 | class |
+| 10:50 - 11:30 | lunch break |
+| 11:30 - 12:20 | class |
+| 12:20 - 12:30 | break |
+| 12:30 - 13:20 | class |
+| 13:20 - 13:30 | break |
+| 13:30 - 14:00 | class wrap up |
+
+* Timezone: Central Mexico
+* Days: Tuesday March 24 to Friday March 27
+
+---
+
+# Asking for help
+
+--
+
+* Use the "raise your **hand**" feature in Zoom
+
+--
+
+* Create an **issue** at [osca_LIIGH_UNAM_2020](https://github.com/lcolladotor/osca_LIIGH_UNAM_2020/issues). Remember to include a reproducible example!
+
+--
+
+* More generally, through the [**Bioconductor Support Website**](https://support.bioconductor.org/) tagging the appropriate package.
+
+--
+
+* Related blog posts: [**How to ask for help for Bioconductor packages**](http://lcolladotor.github.io/2017/03/06/how-to-ask-for-help-for-bioconductor-packages/#.XnjLRNNKh0s), [**Asking for help is challenging but is typically worth it**](http://lcolladotor.github.io/2018/11/12/asking-for-help-is-challenging-but-is-typically-worth-it/#.XnjLf9NKh0s), and [**Learning from our search history**](http://lcolladotor.github.io/2020/02/12/learning-from-our-search-history/)
+
+--
+
+* Related `rstudio::conf(2020)` keynote by [Jenny Bryan](https://twitter.com/JennyBryan): [**Object of type ‘closure’ is not subsettable**](https://resources.rstudio.com/rstudio-conf-2020/object-of-type-closure-is-not-subsettable-jenny-bryan) 
+
+---
+
+background-image: url(https://github.com/Bioconductor/OrchestratingSingleCellAnalysis/raw/master/images/cover.png)
+background-size: contain
+
+---
+
+background-image: url(https://github.com/Bioconductor/OrchestratingSingleCellAnalysis/raw/master/images/SingleCellExperiment.png)
+background-size: contain
+
+---
+
+background-image: url(https://github.com/Bioconductor/OrchestratingSingleCellAnalysis/raw/master/images/Workflow.png)
+background-size: contain
+
+
+---
+
+background-image: url(http://research.libd.org/spatialLIBD/reference/figures/README-access_data-1.png)
+background-size: contain
+
+---
+
+# Quick Introduction: [OSCA](https://osca.bioconductor.org/overview.html#quick-start)
+
+
+```{r 'quick_intro_01', message = FALSE}
+library('scRNAseq')
+library('scater')
+library('scran')
+library('plotly')
+```
+
+---
+
+.scroll-output[
+
+```{r 'quick_intro_02', cache = TRUE}
+sce <- scRNAseq::MacoskoRetinaData()
+
+## How big is the data?
+pryr::object_size(sce)
+
+## How does it look?
+sce
+```
+
+]
+
+---
+
+.scroll-output[
+
+```{r 'quick_intro_03', cache = TRUE}
+# Quality control.
+is.mito <- grepl("^MT-", rownames(sce))
+qcstats <-
+    scater::perCellQCMetrics(sce, subsets = list(Mito = is.mito))
+filtered <-
+    scater::quickPerCellQC(qcstats, percent_subsets = "subsets_Mito_percent")
+sce <- sce[, !filtered$discard]
+
+# Normalization.
+sce <- scater::logNormCounts(sce)
+
+# Feature selection.
+dec <- scran::modelGeneVar(sce)
+hvg <- scran::getTopHVGs(dec, prop = 0.1)
+
+# Dimensionality reduction.
+set.seed(1234)
+sce <- scater::runPCA(sce, ncomponents = 25, subset_row = hvg)
+sce <- scater::runUMAP(sce, dimred = 'PCA', external_neighbors = TRUE)
+
+# Clustering.
+g <- scran::buildSNNGraph(sce, use.dimred = 'PCA')
+sce$clusters <- factor(igraph::cluster_louvain(g)$membership)
+```
+
+]
+
+
+---
+
+```{r 'quick_intro_04'}
+# Visualization.
+scater::plotUMAP(sce, colour_by = "clusters")
+```
+
+---
+
+```{r 'quick_intro_05', eval = FALSE}
+# Interactive visualization
+p <- scater::plotUMAP(sce, colour_by = "clusters")
+plotly::ggplotly(p)
+```
+
+```{r 'quick_intro_06', eval = FALSE, echo = FALSE}
+# From https://github.com/rstudio/htmltools/issues/90
+p <- scater::plotUMAP(sce, colour_by = "clusters")
+pi <- plotly::ggplotly(p)
+f <- '01-introduction_files/figure-html/quick_intro_06.html'
+htmlwidgets::saveWidget(pi, here::here(f))
+htmltools::tags$iframe(
+    src = f,
+    width = "100%",
+    height = "400",
+    scrolling = "no",
+    seamless = "seamless",
+    frameBorder = "0"
+)
+```
+
+
+
 
 
 ---
