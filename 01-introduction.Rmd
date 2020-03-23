@@ -430,7 +430,7 @@ Instructor: [**Leonardo Collado-Torres**](http://lcolladotor.github.io/).
 .scroll-output[
 .tiny[
 
-```{r 'reproducibility'}
+```{r 'reproducibility', cache = TRUE, dependson=knitr::all_labels()}
 options(width = 120)
 sessioninfo::session_info()
 ```
