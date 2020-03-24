@@ -134,6 +134,7 @@ following contents:
 ## For using Leo's Bioconductor cached' files
 EXPERIMENT_HUB_CACHE="/mnt/Genoma/amedina/lcollado/BiocHubCache"
 ANNOTATION_HUB_CACHE="/mnt/Genoma/amedina/lcollado/BiocHubCache"
+XDG_CACHE_HOME="/mnt/Genoma/amedina/lcollado/BiocHubCache"
 ```
 
 To test that it works, run:
