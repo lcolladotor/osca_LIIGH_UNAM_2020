@@ -91,6 +91,47 @@ version 1.2.5 or newer.
 
 <a href="https://osca.bioconductor.org/"><img src="https://raw.githubusercontent.com/Bioconductor/OrchestratingSingleCellAnalysis/master/images/Workflow.png" /></a>
 
+## LIIGH Cluster DNA setup
+
+If you add the following code to your `~/.Rprofile` at the DNA
+LIIGH-UNAM cluster, you’ll be able to use the same R packages I
+installed.
+
+``` bash
+## Log into the cluster
+
+## Load the R 3.6.1 module
+module load r/3.6.1
+
+## Edit your ~/.Rprofile
+vi ~/.Rprofile
+```
+
+``` r
+## Add this to your ~/.Rprofile file
+if(R.home() == '/cm/shared/apps/r/3.6.1-studio/lib64/R') {
+    if (interactive())
+        message("Using the following library: /mnt/Genoma/amedina/lcollado/R/3.6.1")
+    .libPaths(
+        c(
+            '/mnt/Genoma/amedina/lcollado/R/3.6.1',
+            '/cm/shared/apps/r/3.6.1-studio/lib64/R/library'
+        )
+    )
+}
+```
+
+If you are using RStudio through Cyberduck or something like that, you
+could use `usethis::edit_r_profile()`.
+
+To test that it works, run:
+
+``` bash
+qrsh
+module load r/3.6.1
+Rscript -e "packageVersion('spatialLIBD')"
+```
+
 ## License
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This
