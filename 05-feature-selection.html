@@ -4,7 +4,7 @@
     <title>Feature Selection</title>
     <meta charset="utf-8" />
     <meta name="author" content="Leonardo Collado-Torres" />
-    <meta name="date" content="2020-03-22" />
+    <meta name="date" content="2020-03-23" />
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-161558379-1"></script>
     <script>
@@ -23,7 +23,7 @@ class: center, middle, inverse, title-slide
 # <strong>Feature Selection</strong>
 ## Analyzing <strong>scRNA-seq</strong> data with <strong>Bioconductor</strong> for <strong>LCG-EJ-UNAM</strong> March 2020
 ### <a href="http://lcolladotor.github.io/">Leonardo Collado-Torres</a>
-### 2020-03-22
+### 2020-03-23
 
 ---
 
@@ -75,6 +75,979 @@ pre {
 
 ---
 
+# Slides by Peter Hickey
+
+View them [here](https://docs.google.com/presentation/d/19J2FyjKlBQdAkku4Oa6UZ6SA-Y4P7AEKCRIbEQWA9ho/edit#slide=id.ga100bba375887aa_0)
+
+---
+
+# Code and output
+
+.scroll-output[
+
+
+```r
+library('BiocFileCache')
+```
+
+```
+## Loading required package: dbplyr
+```
+
+```r
+bfc &lt;- BiocFileCache()
+raw.path &lt;-
+    bfcrpath(
+        bfc,
+        file.path(
+            "http://cf.10xgenomics.com/samples",
+            "cell-exp/2.1.0/pbmc4k/pbmc4k_raw_gene_bc_matrices.tar.gz"
+        )
+    )
+untar(raw.path, exdir = file.path(tempdir(), "pbmc4k"))
+
+library('DropletUtils')
+```
+
+```
+## Loading required package: SingleCellExperiment
+```
+
+```
+## Loading required package: SummarizedExperiment
+```
+
+```
+## Loading required package: GenomicRanges
+```
+
+```
+## Loading required package: stats4
+```
+
+```
+## Loading required package: BiocGenerics
+```
+
+```
+## Loading required package: parallel
+```
+
+```
+## 
+## Attaching package: 'BiocGenerics'
+```
+
+```
+## The following objects are masked from 'package:parallel':
+## 
+##     clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+##     clusterExport, clusterMap, parApply, parCapply, parLapply,
+##     parLapplyLB, parRapply, parSapply, parSapplyLB
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     IQR, mad, sd, var, xtabs
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+##     dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+##     grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+##     order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+##     rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+##     union, unique, unsplit, which, which.max, which.min
+```
+
+```
+## Loading required package: S4Vectors
+```
+
+```
+## 
+## Attaching package: 'S4Vectors'
+```
+
+```
+## The following object is masked from 'package:base':
+## 
+##     expand.grid
+```
+
+```
+## Loading required package: IRanges
+```
+
+```
+## Loading required package: GenomeInfoDb
+```
+
+```
+## Loading required package: Biobase
+```
+
+```
+## Welcome to Bioconductor
+## 
+##     Vignettes contain introductory material; view with
+##     'browseVignettes()'. To cite Bioconductor, see
+##     'citation("Biobase")', and for packages 'citation("pkgname")'.
+```
+
+```
+## Loading required package: DelayedArray
+```
+
+```
+## Loading required package: matrixStats
+```
+
+```
+## 
+## Attaching package: 'matrixStats'
+```
+
+```
+## The following objects are masked from 'package:Biobase':
+## 
+##     anyMissing, rowMedians
+```
+
+```
+## Loading required package: BiocParallel
+```
+
+```
+## 
+## Attaching package: 'DelayedArray'
+```
+
+```
+## The following objects are masked from 'package:matrixStats':
+## 
+##     colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     aperm, apply, rowsum
+```
+
+```r
+library('Matrix')
+```
+
+```
+## 
+## Attaching package: 'Matrix'
+```
+
+```
+## The following object is masked from 'package:S4Vectors':
+## 
+##     expand
+```
+
+```r
+fname &lt;- file.path(tempdir(), "pbmc4k/raw_gene_bc_matrices/GRCh38")
+sce.pbmc &lt;- read10xCounts(fname, col.names = TRUE)
+
+# gene-annotation
+library('scater')
+```
+
+```
+## Loading required package: ggplot2
+```
+
+```r
+rownames(sce.pbmc) &lt;- uniquifyFeatureNames(rowData(sce.pbmc)$ID, rowData(sce.pbmc)$Symbol)
+library('EnsDb.Hsapiens.v86')
+```
+
+```
+## Loading required package: ensembldb
+```
+
+```
+## Loading required package: GenomicFeatures
+```
+
+```
+## Loading required package: AnnotationDbi
+```
+
+```
+## Loading required package: AnnotationFilter
+```
+
+```
+## 
+## Attaching package: 'ensembldb'
+```
+
+```
+## The following object is masked from 'package:stats':
+## 
+##     filter
+```
+
+```r
+location &lt;- mapIds(
+    EnsDb.Hsapiens.v86,
+    keys = rowData(sce.pbmc)$ID,
+    column = "SEQNAME",
+    keytype = "GENEID"
+)
+```
+
+```
+## Warning: Unable to map 144 of 33694 requested IDs.
+```
+
+]
+
+---
+
+# Exercises
+
+--
+
+* Question 1
+
+???
+
+Solutions
+
+---
+
+.scroll-output[
+
+
+```r
+# cell-detection
+set.seed(100)
+e.out &lt;- emptyDrops(counts(sce.pbmc))
+sce.pbmc &lt;- sce.pbmc[, which(e.out$FDR &lt;= 0.001)]
+
+# quality-control
+stats &lt;-
+    perCellQCMetrics(sce.pbmc, subsets = list(Mito = which(location == "MT")))
+high.mito &lt;- isOutlier(stats$subsets_Mito_percent,
+    type = "higher")
+sce.pbmc &lt;- sce.pbmc[, !high.mito]
+
+# normalization
+library('scran')
+set.seed(1000)
+clusters &lt;- quickCluster(sce.pbmc)
+sce.pbmc &lt;- computeSumFactors(sce.pbmc, cluster = clusters)
+```
+
+```
+## Warning in .calculate_sum_factors(assay(x, i = assay.type), subset.row =
+## subset.row, : partial argument match of 'cluster' to 'clusters'
+```
+
+```r
+sce.pbmc &lt;- logNormCounts(sce.pbmc)
+```
+
+]
+
+---
+
+.scroll-output[
+
+
+```r
+# Illustrative dataset: 416B ---------------------------------------------------
+
+library('scRNAseq')
+sce.416b &lt;- LunSpikeInData(which = "416b")
+```
+
+```
+## snapshotDate(): 2019-10-22
+```
+
+```
+## see ?scRNAseq and browseVignettes('scRNAseq') for documentation
+```
+
+```
+## loading from cache
+```
+
+```
+## see ?scRNAseq and browseVignettes('scRNAseq') for documentation
+```
+
+```
+## loading from cache
+```
+
+```
+## see ?scRNAseq and browseVignettes('scRNAseq') for documentation
+```
+
+```
+## loading from cache
+```
+
+```r
+sce.416b$block &lt;- factor(sce.416b$block)
+
+# gene-annotation
+library('AnnotationHub')
+```
+
+```
+## 
+## Attaching package: 'AnnotationHub'
+```
+
+```
+## The following object is masked from 'package:Biobase':
+## 
+##     cache
+```
+
+```r
+ens.mm.v97 &lt;- AnnotationHub()[["AH73905"]]
+```
+
+```
+## snapshotDate(): 2019-10-29
+```
+
+```
+## loading from cache
+```
+
+```r
+rowData(sce.416b)$ENSEMBL &lt;- rownames(sce.416b)
+rowData(sce.416b)$SYMBOL &lt;- mapIds(
+    ens.mm.v97,
+    keys = rownames(sce.416b),
+    keytype = "GENEID",
+    column = "SYMBOL"
+)
+```
+
+```
+## Warning: Unable to map 563 of 46604 requested IDs.
+```
+
+```r
+rowData(sce.416b)$SEQNAME &lt;- mapIds(
+    ens.mm.v97,
+    keys = rownames(sce.416b),
+    keytype = "GENEID",
+    column = "SEQNAME"
+)
+```
+
+```
+## Warning: Unable to map 563 of 46604 requested IDs.
+```
+
+```r
+rownames(sce.416b) &lt;- uniquifyFeatureNames(rowData(sce.416b)$ENSEMBL,
+    rowData(sce.416b)$SYMBOL)
+
+# quality-control
+mito &lt;- which(rowData(sce.416b)$SEQNAME == "MT")
+stats &lt;- perCellQCMetrics(sce.416b, subsets = list(Mt = mito))
+qc &lt;- quickPerCellQC(
+    stats,
+    percent_subsets = c("subsets_Mt_percent", "altexps_ERCC_percent"),
+    batch = sce.416b$block
+)
+sce.416b &lt;- sce.416b[, !qc$discard]
+
+# normalization
+sce.416b &lt;- computeSumFactors(sce.416b)
+sce.416b &lt;- logNormCounts(sce.416b)
+```
+
+]
+
+
+---
+
+.scroll-output[
+
+
+```r
+# Variance of the log-counts ---------------------------------------------------
+
+dec.pbmc &lt;- modelGeneVar(sce.pbmc)
+
+# Visualizing the fit:
+fit.pbmc &lt;- metadata(dec.pbmc)
+plot(fit.pbmc$mean, fit.pbmc$var,
+    xlab = "Mean of log-expression",
+    ylab = "Variance of log-expression")
+curve(fit.pbmc$trend(x),
+    col = "dodgerblue",
+    add = TRUE,
+    lwd = 2)
+```
+
+![](05-feature-selection_files/figure-html/all_code4-1.png)&lt;!-- --&gt;
+
+```r
+# Ordering by most interesting genes for inspection.
+dec.pbmc[order(dec.pbmc$bio, decreasing = TRUE), ]
+```
+
+```
+## DataFrame with 33694 rows and 6 columns
+##                     mean             total              tech                bio
+##                &lt;numeric&gt;         &lt;numeric&gt;         &lt;numeric&gt;          &lt;numeric&gt;
+## LYZ     1.97769673707568   5.1159500611095  0.82727664672734   4.28867341438216
+## S100A9  1.94950920785793  4.58859014766227 0.827542445867915   3.76104770179436
+## S100A8  1.71827632030156  4.45723403089262 0.819401996008416   3.63783203488421
+## HLA-DRA 2.09694376970247   3.7268983984442 0.823662585789582   2.90323581265462
+## CD74    2.89839753243019  3.30912153093723 0.793202990130979   2.51591854080625
+## ...                  ...               ...               ...                ...
+## PTMA    3.83013315155046 0.471105138449811 0.740524978380523 -0.269419839930711
+## HLA-B   4.50160947331388 0.475347815893854 0.755806549658926 -0.280458733765072
+## EIF1     3.2426121173403 0.478352466438016 0.771315504705692 -0.292963038267676
+## TMSB4X  6.08482790661183 0.408393742972349 0.742839890904661 -0.334446147932313
+## B2M     5.95481007289176 0.304436638362183 0.714660541046408 -0.410223902684225
+##                       p.value                   FDR
+##                     &lt;numeric&gt;             &lt;numeric&gt;
+## LYZ      7.0321706653829e-271  6.9091076787387e-267
+## S100A9  9.35453836302795e-209 6.12722262778331e-205
+## S100A8    2.604683703797e-199 1.27955086949028e-195
+## HLA-DRA 1.69875615764308e-126 2.38432560697761e-123
+## CD74    7.30210305204499e-103 6.83268214155638e-100
+## ...                       ...                   ...
+## PTMA        0.993177414234264     0.999999999531493
+## HLA-B       0.994058786260565     0.999999999531493
+## EIF1         0.99498711208533     0.999999999531493
+## TMSB4X      0.998864257564838     0.999999999531493
+## B2M         0.999950168961814     0.999999999531493
+```
+
+]
+
+
+---
+
+.scroll-output[
+
+
+```r
+# Coefficient of variation -----------------------------------------------------
+
+dec.cv2.pbmc &lt;- modelGeneCV2(sce.pbmc)
+# Visualizing the fit:
+fit.cv2.pbmc &lt;- metadata(dec.cv2.pbmc)
+plot(fit.cv2.pbmc$mean, fit.cv2.pbmc$cv2, log = "xy")
+```
+
+```
+## Warning in xy.coords(x, y, xlabel, ylabel, log): 14044 x values &lt;= 0 omitted
+## from logarithmic plot
+```
+
+```r
+curve(fit.cv2.pbmc$trend(x),
+    col = "dodgerblue",
+    add = TRUE,
+    lwd = 2)
+```
+
+![](05-feature-selection_files/figure-html/all_code5-1.png)&lt;!-- --&gt;
+
+```r
+# Ordering by most interesting genes for inspection.
+dec.cv2.pbmc[order(dec.cv2.pbmc$ratio, decreasing = TRUE), ]
+```
+
+```
+## DataFrame with 33694 rows and 6 columns
+##                         mean            total            trend            ratio
+##                    &lt;numeric&gt;        &lt;numeric&gt;        &lt;numeric&gt;        &lt;numeric&gt;
+## HIST1H2AC  0.904516934666557 267.718236577368 1.55979164387129  171.63717835602
+## GNG11      0.690568836016836 219.322909957405 1.98063875112505 110.733423665887
+## PRTFDC1    0.041251143542588 3034.95248349643 29.9868178384793 101.209554806511
+## TNNC2      0.102157654693312 1210.58511395578  12.228721423039 98.9952319688162
+## PF4         1.10837584898308 128.809452421799 1.30994958879054 98.3316102574044
+## ...                      ...              ...              ...              ...
+## AC023491.2                 0              NaN              Inf              NaN
+## AC233755.2                 0              NaN              Inf              NaN
+## AC233755.1                 0              NaN              Inf              NaN
+## AC213203.1                 0              NaN              Inf              NaN
+## FAM231B                    0              NaN              Inf              NaN
+##              p.value       FDR
+##            &lt;numeric&gt; &lt;numeric&gt;
+## HIST1H2AC          0         0
+## GNG11              0         0
+## PRTFDC1            0         0
+## TNNC2              0         0
+## PF4                0         0
+## ...              ...       ...
+## AC023491.2       NaN       NaN
+## AC233755.2       NaN       NaN
+## AC233755.1       NaN       NaN
+## AC213203.1       NaN       NaN
+## FAM231B          NaN       NaN
+```
+
+]
+
+---
+
+.scroll-output[
+
+
+```r
+# In the presence of spike-ins -------------------------------------------------
+
+dec.spike.416b &lt;- modelGeneVarWithSpikes(sce.416b, "ERCC")
+# Ordering by most interesting genes for inspection.
+dec.spike.416b[order(dec.spike.416b$bio, decreasing = TRUE), ]
+```
+
+```
+## DataFrame with 46604 rows and 6 columns
+##                      mean             total             tech               bio
+##                 &lt;numeric&gt;         &lt;numeric&gt;        &lt;numeric&gt;         &lt;numeric&gt;
+## Lyz2     6.61096803891878  13.8497201762179 1.57130530147958  12.2784148747383
+## Ccl9     6.67845998360554  13.1869005745724 1.50034784936951  11.6865527252029
+## Top2a    5.81023942468506  14.1787245984925 2.54775542311768  11.6309691753748
+## Cd200r3  4.83179821635761  15.5612599938701 4.22984248305335  11.3314175108168
+## Ccnb2    5.97776034107469  13.1392817339087 2.30176764546838  10.8375140884403
+## ...                   ...               ...              ...               ...
+## Rpl5-ps2 3.60625401733281 0.612623344818866 6.32852661749413 -5.71590327267527
+## Gm11942  3.38767658515201 0.798570319939665  6.5147301200209 -5.71615980008124
+## Gm12816  2.91276213414496  0.83866968433397 6.57363561000052 -5.73496592566655
+## Gm13623  2.72843841213055 0.708071335002565  6.4544837822736 -5.74641244727104
+## Rps12l1  3.15419890541469 0.746615468755298 6.59331632615833 -5.84670085740304
+##                        p.value                   FDR
+##                      &lt;numeric&gt;             &lt;numeric&gt;
+## Lyz2     1.48993187648261e-186 1.54156125498507e-183
+## Ccl9     2.21855596985267e-185   2.199790683941e-182
+## Top2a      3.8001564031599e-65  1.13040402407495e-62
+## Cd200r3   9.46221237861832e-24  6.08573697226973e-22
+## Ccnb2     3.68706262912477e-69  1.20193190938743e-66
+## ...                        ...                   ...
+## Rpl5-ps2      0.99961624700222     0.999726145742423
+## Gm11942       0.99945891635767     0.999726145742423
+## Gm12816      0.999422192505515     0.999726145742423
+## Gm13623      0.999543762578621     0.999726145742423
+## Rps12l1      0.999521783333319     0.999726145742423
+```
+
+```r
+# In the absence of spike-ins --------------------------------------------------
+
+set.seed(0010101)
+dec.pois.pbmc &lt;- modelGeneVarByPoisson(sce.pbmc)
+```
+
+```
+## Warning in seq.default(from = log(min(means)), to = log(max(means)), length =
+## npts): partial argument match of 'length' to 'length.out'
+```
+
+```r
+# Ordering by most interesting genes for inspection.
+dec.pois.pbmc[order(dec.pois.pbmc$bio, decreasing = TRUE), ]
+```
+
+```
+## DataFrame with 33694 rows and 6 columns
+##                      mean             total              tech
+##                 &lt;numeric&gt;         &lt;numeric&gt;         &lt;numeric&gt;
+## LYZ      1.97769673707568   5.1159500611095  0.62154711670504
+## S100A9   1.94950920785793  4.58859014766227 0.627306158799179
+## S100A8   1.71827632030156  4.45723403089262 0.669427971437804
+## HLA-DRA  2.09694376970247   3.7268983984442 0.596371862296273
+## CD74     2.89839753243019  3.30912153093723  0.42262399834624
+## ...                   ...               ...               ...
+## ATP5J    0.61952391166994 0.455658705950256 0.507720135991298
+## NEDD8   0.846016230212089 0.561647992087122 0.614757941258374
+## NDUFA1  0.866546068674659 0.561476949834516 0.621857770268662
+## SAP18   0.765422347908533 0.515945653144755 0.582613562895256
+## SUMO2    1.36130581955543 0.618400317390215 0.698945564859564
+##                         bio           p.value       FDR
+##                   &lt;numeric&gt;         &lt;numeric&gt; &lt;numeric&gt;
+## LYZ        4.49440294440446                 0         0
+## S100A9     3.96128398886309                 0         0
+## S100A8     3.78780605945482                 0         0
+## HLA-DRA    3.13052653614793                 0         0
+## CD74       2.88649753259099                 0         0
+## ...                     ...               ...       ...
+## ATP5J    -0.052061430041042 0.947965420327746         1
+## NEDD8   -0.0531099491712516 0.914572836636807         1
+## NDUFA1  -0.0603808204341457 0.938118682234383         1
+## SAP18   -0.0666679097505009 0.965153998959554         1
+## SUMO2   -0.0805452474693483 0.966130141578016         1
+```
+
+```r
+# Considering experimental factors ---------------------------------------------
+
+dec.block.416b &lt;- modelGeneVarWithSpikes(sce.416b, "ERCC",
+    block = sce.416b$block)
+dec.block.416b[order(dec.block.416b$bio, decreasing = TRUE), ]
+```
+
+```
+## DataFrame with 46604 rows and 7 columns
+##                      mean             total             tech               bio
+##                 &lt;numeric&gt;         &lt;numeric&gt;        &lt;numeric&gt;         &lt;numeric&gt;
+## Lyz2     6.61235092956153  13.8618988024144 1.58416440849175  12.2777343939227
+## Ccl9     6.67841214065115  13.2598761518269 1.44553397943297  11.8143421723939
+## Top2a    5.81274666129111  14.0191605357462 2.74571164189595  11.2734488938502
+## Cd200r3  4.83305175110888  15.5908569933105 4.31892122397075  11.2719357693398
+## Ccnb2    5.97999269432625  13.0256084334992 2.46646680303025  10.5591416304689
+## ...                   ...               ...              ...               ...
+## Gm12816  2.91299478430894  0.84257353020541  6.6772969278893 -5.83472339768389
+## Gm5786   2.90716973737035  0.87948493152832 6.71686487286208 -5.83737994133376
+## Rpl9-ps4 3.26420500290278 0.807057424228047 6.64931798189563 -5.84226055766759
+## Gm13623  2.72787943922598 0.700296494037514 6.63874744721625 -5.93845095317873
+## Rps12l1  3.15425441544777 0.750775094843529 6.70032524451785 -5.94955014967432
+##                        p.value                   FDR
+##                      &lt;numeric&gt;             &lt;numeric&gt;
+## Lyz2                         0                     0
+## Ccl9                         0                     0
+## Top2a    3.89855011267489e-137 8.43398154830222e-135
+## Cd200r3   1.17783163724758e-54  7.00721486789514e-53
+## Ccnb2     1.2038008051688e-151 2.98404664172937e-149
+## ...                        ...                   ...
+## Gm12816      0.999988544502341     0.999998947604576
+## Gm5786       0.999994012598123     0.999998947604576
+## Rpl9-ps4     0.999988234321942     0.999998947604576
+## Gm13623       0.99999778490972     0.999998947604576
+## Rps12l1      0.999995018990454     0.999998947604576
+##                                                                                                                per.block
+##                                                                                                              &lt;DataFrame&gt;
+## Lyz2       6.35651616065101:13.3747698142285:2.08227421625012:...:6.86818569847206:14.3490277906004:1.08605460073337:...
+## Ccl9       6.68726308721402:13.0777537500965:1.65923180202562:...:6.66956119408827:13.4419985535572:1.23183615684032:...
+## Top2a      5.34890788917346:17.5971863642305:3.91641735592849:...:6.27658543340876:10.4411347072618:1.57500592786341:...
+## Cd200r3    4.60114782212492:15.7869618177592:5.55587131248954:...:5.06495568009284:15.3947521688619:3.08197113545196:...
+## Ccnb2         5.5670073427887:15.4149994633951:3.4693116817634:...:6.3929780458638:10.6362174036033:1.46362192429709:...
+## ...                                                                                                                  ...
+## Gm12816   2.86995450397276:0.624143273081851:7.43035752357821:...:2.95603506464512:1.06100378732897:5.92423633220039:...
+## Gm5786   2.96006470849401:0.902872362148704:7.49910657772781:...:2.85427476624668:0.856097500907936:5.93462316799636:...
+## Rpl9-ps4   3.60690125067732:0.54327593848473:7.36805467284382:...:2.92150875512824:1.07083890997136:5.93058129094744:...
+## Gm13623  2.83128942657178:0.852900814696626:7.39441634068788:...:2.62446945188018:0.547692173378403:5.88307855374461:...
+## Rps12l1   3.14398505932761:0.716669519607103:7.5724598084379:...:3.16452377156793:0.784880670079955:5.82819068059779:...
+```
+
+```r
+dec.block.416b$per.block
+```
+
+```
+## DataFrame with 46604 rows and 2 columns
+##                                                         X20160113
+##                                                       &lt;DataFrame&gt;
+## 1                                                       0:0:0:...
+## 2                                                       0:0:0:...
+## 3                                                       0:0:0:...
+## 4                                                       0:0:0:...
+## 5     0.015818190192731:0.0232700081105271:0.0754413464457108:...
+## ...                                                           ...
+## 46600                                                   0:0:0:...
+## 46601                                                   0:0:0:...
+## 46602                                                   0:0:0:...
+## 46603                                                   0:0:0:...
+## 46604   14.8188636663469:2.90986400629689:0.00884548590566011:...
+##                                                       X20160325
+##                                                     &lt;DataFrame&gt;
+## 1                                                     0:0:0:...
+## 2                                                     0:0:0:...
+## 3                                                     0:0:0:...
+## 4                                                     0:0:0:...
+## 5                                                     0:0:0:...
+## ...                                                         ...
+## 46600                                                 0:0:0:...
+## 46601                                                 0:0:0:...
+## 46602                                                 0:0:0:...
+## 46603                                                 0:0:0:...
+## 46604 15.2007368851855:3.41768404695488:0.00618921550122494:...
+```
+
+```r
+dec.block.416b$per.block$X20160113
+```
+
+```
+## DataFrame with 46604 rows and 6 columns
+##                                 mean              total                tech
+##                            &lt;numeric&gt;          &lt;numeric&gt;           &lt;numeric&gt;
+## 4933401J01Rik                      0                  0                   0
+## Gm26206                            0                  0                   0
+## Xkr4                               0                  0                   0
+## Gm18956                            0                  0                   0
+## Gm37180            0.015818190192731 0.0232700081105271  0.0754413464457108
+## ...                              ...                ...                 ...
+## CAAA01098150.1                     0                  0                   0
+## CAAA01064564.1                     0                  0                   0
+## Vmn2r122                           0                  0                   0
+## CAAA01147332.1                     0                  0                   0
+## CBFB-MYH11-mcherry  14.8188636663469   2.90986400629689 0.00884548590566011
+##                                    bio           p.value               FDR
+##                              &lt;numeric&gt;         &lt;numeric&gt;         &lt;numeric&gt;
+## 4933401J01Rik                        0               NaN               NaN
+## Gm26206                              0               NaN               NaN
+## Xkr4                                 0               NaN               NaN
+## Gm18956                              0               NaN               NaN
+## Gm37180            -0.0521713383351837 0.999748220051701 0.999999330234571
+## ...                                ...               ...               ...
+## CAAA01098150.1                       0               NaN               NaN
+## CAAA01064564.1                       0               NaN               NaN
+## Vmn2r122                             0               NaN               NaN
+## CAAA01147332.1                       0               NaN               NaN
+## CBFB-MYH11-mcherry    2.90101852039123                 0                 0
+```
+
+]
+
+---
+
+.scroll-output[
+
+
+```r
+# Selecting HVGs on the largest metrics ----------------------------------------
+
+# Works with modelGeneVar() output
+hvg.pbmc.var &lt;- getTopHVGs(dec.pbmc, n = 1000)
+str(hvg.pbmc.var)
+```
+
+```
+##  chr [1:1000] "LYZ" "S100A9" "S100A8" "HLA-DRA" "CD74" "CST3" "TYROBP" ...
+```
+
+```r
+# Works with modelGeneVarWithSpikes() output
+hvg.416b.var &lt;- getTopHVGs(dec.spike.416b, n = 1000)
+str(hvg.416b.var)
+```
+
+```
+##  chr [1:1000] "Lyz2" "Ccl9" "Top2a" "Cd200r3" "Ccnb2" "Gm10736" "Hbb-bt" ...
+```
+
+```r
+# Also works with modelGeneCV2() but note `var.field`
+hvg.pbmc.cv2 &lt;- getTopHVGs(dec.cv2.pbmc,
+    var.field = "ratio", n = 1000)
+str(hvg.pbmc.cv2)
+```
+
+```
+##  chr [1:1000] "HIST1H2AC" "GNG11" "PRTFDC1" "TNNC2" "PF4" "HGD" "PPBP" ...
+```
+
+]
+
+---
+
+.scroll-output[
+
+
+```r
+# Selecting HVGs on statistical significance -----------------------------------
+
+# Works with modelGeneVar() output
+hvg.pbmc.var.2 &lt;- getTopHVGs(dec.pbmc, fdr.threshold = 0.05)
+str(hvg.pbmc.var.2)
+```
+
+```
+##  chr [1:651] "LYZ" "S100A9" "S100A8" "HLA-DRA" "CD74" "CST3" "TYROBP" ...
+```
+
+```r
+# Works with modelGeneVarWithSpikes() output
+hvg.416b.var.2 &lt;- getTopHVGs(dec.spike.416b,
+    fdr.threshold = 0.05)
+str(hvg.416b.var.2)
+```
+
+```
+##  chr [1:2568] "Lyz2" "Ccl9" "Top2a" "Cd200r3" "Ccnb2" "Gm10736" "Hbb-bt" ...
+```
+
+```r
+# Also works with modelGeneCV2() but note `var.field`
+hvg.pbmc.cv2.2 &lt;- getTopHVGs(dec.cv2.pbmc,
+    var.field = "ratio", fdr.threshold = 0.05)
+str(hvg.pbmc.cv2.2)
+```
+
+```
+##  chr [1:1699] "HIST1H2AC" "GNG11" "PRTFDC1" "TNNC2" "PF4" "HGD" "PPBP" ...
+```
+
+]
+
+---
+
+.scroll-output[
+
+
+```r
+# Selecting genes above the trend as HVGs --------------------------------------
+
+# Works with modelGeneVar() output
+hvg.pbmc.var.3 &lt;- getTopHVGs(dec.pbmc, var.threshold = 0)
+str(hvg.pbmc.var.3)
+```
+
+```
+##  chr [1:12791] "LYZ" "S100A9" "S100A8" "HLA-DRA" "CD74" "CST3" "TYROBP" ...
+```
+
+```r
+# Works with modelGeneVarWithSpikes() output
+hvg.416b.var.3 &lt;- getTopHVGs(dec.spike.416b,
+    var.threshold = 0)
+str(hvg.416b.var.3)
+```
+
+```
+##  chr [1:11087] "Lyz2" "Ccl9" "Top2a" "Cd200r3" "Ccnb2" "Gm10736" "Hbb-bt" ...
+```
+
+```r
+# Also works with modelGeneCV2() but note `var.field` and
+# value of `var.threshold`
+hvg.pbmc.cv2.3 &lt;- getTopHVGs(dec.cv2.pbmc,
+    var.field = "ratio", var.threshold = 1)
+str(hvg.pbmc.cv2.2)
+```
+
+```
+##  chr [1:1699] "HIST1H2AC" "GNG11" "PRTFDC1" "TNNC2" "PF4" "HGD" "PPBP" ...
+```
+
+]
+
+---
+
+.scroll-output[
+
+
+```r
+# Putting it all together ------------------------------------------------------
+
+dec.pbmc &lt;- modelGeneVar(sce.pbmc)
+chosen &lt;- getTopHVGs(dec.pbmc, prop = 0.1)
+str(chosen)
+```
+
+```
+##  chr [1:1279] "LYZ" "S100A9" "S100A8" "HLA-DRA" "CD74" "CST3" "TYROBP" ...
+```
+
+```r
+# Subsetting to just the HVGs --------------------------------------------------
+
+sce.pbmc.hvg &lt;- sce.pbmc[chosen, ]
+sce.pbmc.hvg
+```
+
+```
+## class: SingleCellExperiment 
+## dim: 1279 3922 
+## metadata(1): Samples
+## assays(2): counts logcounts
+## rownames(1279): LYZ S100A9 ... HIST1H2BN TTC39C
+## rowData names(2): ID Symbol
+## colnames(3922): AAACCTGAGAAGGCCT-1 AAACCTGAGACAGACC-1 ...
+##   TTTGTCACAGGTCCAC-1 TTTGTCATCCCAAGAT-1
+## colData names(2): Sample Barcode
+## reducedDimNames(0):
+## spikeNames(0):
+## altExpNames(0):
+```
+
+```r
+# Specifying HVGs in downstream functions --------------------------------------
+
+# Example of specifying HVGs in a downstream function
+# Performing PCA only on the chosen HVGs.
+sce.pbmc &lt;- runPCA(sce.pbmc, subset_row = chosen)
+sce.pbmc
+```
+
+```
+## class: SingleCellExperiment 
+## dim: 33694 3922 
+## metadata(1): Samples
+## assays(2): counts logcounts
+## rownames(33694): RP11-34P13.3 FAM138A ... AC213203.1 FAM231B
+## rowData names(2): ID Symbol
+## colnames(3922): AAACCTGAGAAGGCCT-1 AAACCTGAGACAGACC-1 ...
+##   TTTGTCACAGGTCCAC-1 TTTGTCATCCCAAGAT-1
+## colData names(2): Sample Barcode
+## reducedDimNames(1): PCA
+## spikeNames(0):
+## altExpNames(0):
+```
+
+```r
+# Witchcraft -------------------------------------------------------------------
+
+# Add the full SCE to the subsetted data SCE
+altExp(sce.pbmc.hvg, "original") &lt;- sce.pbmc
+sce.pbmc.hvg
+```
+
+```
+## class: SingleCellExperiment 
+## dim: 1279 3922 
+## metadata(1): Samples
+## assays(2): counts logcounts
+## rownames(1279): LYZ S100A9 ... HIST1H2BN TTC39C
+## rowData names(2): ID Symbol
+## colnames(3922): AAACCTGAGAAGGCCT-1 AAACCTGAGACAGACC-1 ...
+##   TTTGTCACAGGTCCAC-1 TTTGTCATCCCAAGAT-1
+## colData names(2): Sample Barcode
+## reducedDimNames(0):
+## spikeNames(0):
+## altExpNames(1): original
+```
+
+```r
+altExp(sce.pbmc.hvg, "original")
+```
+
+```
+## class: SingleCellExperiment 
+## dim: 33694 3922 
+## metadata(1): Samples
+## assays(2): counts logcounts
+## rownames(33694): RP11-34P13.3 FAM138A ... AC213203.1 FAM231B
+## rowData names(2): ID Symbol
+## colnames(3922): AAACCTGAGAAGGCCT-1 AAACCTGAGACAGACC-1 ...
+##   TTTGTCACAGGTCCAC-1 TTTGTCATCCCAAGAT-1
+## colData names(2): Sample Barcode
+## reducedDimNames(1): PCA
+## spikeNames(0):
+## altExpNames(0):
+```
+
+]
+
+---
+
 class: middle
 
 .center[
@@ -116,57 +1089,138 @@ sessioninfo::session_info()
 ##  version  R version 3.6.3 (2020-02-29)
 ##  os       macOS Catalina 10.15.3      
 ##  system   x86_64, darwin15.6.0        
-##  ui       RStudio                     
+##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/New_York            
-##  date     2020-03-22                  
+##  date     2020-03-23                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
-##  package        * version date       lib source                                   
-##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 3.6.0)                           
-##  backports        1.1.5   2019-10-02 [1] CRAN (R 3.6.0)                           
-##  callr            3.4.2   2020-02-12 [1] CRAN (R 3.6.0)                           
-##  cli              2.0.2   2020-02-28 [1] CRAN (R 3.6.0)                           
-##  colorout       * 1.2-1   2019-05-07 [1] Github (jalvesaq/colorout@7ea9440)       
-##  crayon           1.3.4   2017-09-16 [1] CRAN (R 3.6.0)                           
-##  desc             1.2.0   2018-05-01 [1] CRAN (R 3.6.0)                           
-##  devtools       * 2.2.2   2020-02-17 [1] CRAN (R 3.6.0)                           
-##  digest           0.6.25  2020-02-23 [1] CRAN (R 3.6.0)                           
-##  ellipsis         0.3.0   2019-09-20 [1] CRAN (R 3.6.0)                           
-##  evaluate         0.14    2019-05-28 [1] CRAN (R 3.6.0)                           
-##  fansi            0.4.1   2020-01-08 [1] CRAN (R 3.6.0)                           
-##  fs               1.3.2   2020-03-05 [1] CRAN (R 3.6.0)                           
-##  glue             1.3.2   2020-03-12 [1] CRAN (R 3.6.0)                           
-##  htmltools        0.4.0   2019-10-04 [1] CRAN (R 3.6.0)                           
-##  knitr            1.28    2020-02-06 [1] CRAN (R 3.6.0)                           
-##  magrittr         1.5     2014-11-22 [1] CRAN (R 3.6.0)                           
-##  memoise          1.1.0   2017-04-21 [1] CRAN (R 3.6.0)                           
-##  packrat          0.5.0   2018-11-14 [1] CRAN (R 3.6.0)                           
-##  pkgbuild         1.0.6   2019-10-09 [1] CRAN (R 3.6.0)                           
-##  pkgload          1.0.2   2018-10-29 [1] CRAN (R 3.6.0)                           
-##  prettyunits      1.1.1   2020-01-24 [1] CRAN (R 3.6.2)                           
-##  processx         3.4.2   2020-02-09 [1] CRAN (R 3.6.0)                           
-##  ps               1.3.2   2020-02-13 [1] CRAN (R 3.6.0)                           
-##  R6               2.4.1   2019-11-12 [1] CRAN (R 3.6.1)                           
-##  Rcpp             1.0.3   2019-11-08 [1] CRAN (R 3.6.0)                           
-##  remotes          2.1.1   2020-02-15 [1] CRAN (R 3.6.0)                           
-##  rlang            0.4.5   2020-03-01 [1] CRAN (R 3.6.0)                           
-##  rmarkdown        2.1     2020-01-20 [1] CRAN (R 3.6.0)                           
-##  rprojroot        1.3-2   2018-01-03 [1] CRAN (R 3.6.0)                           
-##  rsconnect        0.8.16  2019-12-13 [1] CRAN (R 3.6.2)                           
-##  rstudioapi       0.11    2020-02-07 [1] CRAN (R 3.6.0)                           
-##  sessioninfo      1.1.1   2018-11-05 [1] CRAN (R 3.6.0)                           
-##  stringi          1.4.6   2020-02-17 [1] CRAN (R 3.6.0)                           
-##  stringr          1.4.0   2019-02-10 [1] CRAN (R 3.6.0)                           
-##  testthat       * 2.3.2   2020-03-02 [1] CRAN (R 3.6.2)                           
-##  usethis        * 1.5.1   2019-07-04 [1] CRAN (R 3.6.0)                           
-##  withr            2.1.2   2018-03-15 [1] CRAN (R 3.6.0)                           
-##  xaringan         0.15    2020-03-04 [1] CRAN (R 3.6.3)                           
-##  xaringanthemer * 0.2.0   2020-03-22 [1] Github (gadenbuie/xaringanthemer@460f441)
-##  xfun             0.12    2020-01-13 [1] CRAN (R 3.6.0)                           
-##  yaml             2.2.1   2020-02-01 [1] CRAN (R 3.6.0)                           
+##  package                * version  date       lib source                                   
+##  AnnotationDbi          * 1.48.0   2019-10-29 [1] Bioconductor                             
+##  AnnotationFilter       * 1.10.0   2019-10-29 [1] Bioconductor                             
+##  AnnotationHub          * 2.18.0   2019-10-29 [1] Bioconductor                             
+##  askpass                  1.1      2019-01-13 [1] CRAN (R 3.6.0)                           
+##  assertthat               0.2.1    2019-03-21 [1] CRAN (R 3.6.0)                           
+##  beeswarm                 0.2.3    2016-04-25 [1] CRAN (R 3.6.0)                           
+##  Biobase                * 2.46.0   2019-10-29 [1] Bioconductor                             
+##  BiocFileCache          * 1.10.2   2019-11-08 [1] Bioconductor                             
+##  BiocGenerics           * 0.32.0   2019-10-29 [1] Bioconductor                             
+##  BiocManager              1.30.10  2019-11-16 [1] CRAN (R 3.6.1)                           
+##  BiocNeighbors            1.4.2    2020-02-29 [1] Bioconductor                             
+##  BiocParallel           * 1.20.1   2019-12-21 [1] Bioconductor                             
+##  BiocSingular             1.2.2    2020-02-14 [1] Bioconductor                             
+##  BiocVersion              3.10.1   2019-06-06 [1] Bioconductor                             
+##  biomaRt                  2.42.0   2019-10-29 [1] Bioconductor                             
+##  Biostrings               2.54.0   2019-10-29 [1] Bioconductor                             
+##  bit                      1.1-15.2 2020-02-10 [1] CRAN (R 3.6.0)                           
+##  bit64                    0.9-7    2017-05-08 [1] CRAN (R 3.6.0)                           
+##  bitops                   1.0-6    2013-08-17 [1] CRAN (R 3.6.0)                           
+##  blob                     1.2.1    2020-01-20 [1] CRAN (R 3.6.0)                           
+##  cli                      2.0.2    2020-02-28 [1] CRAN (R 3.6.0)                           
+##  codetools                0.2-16   2018-12-24 [1] CRAN (R 3.6.3)                           
+##  colorout               * 1.2-1    2019-05-07 [1] Github (jalvesaq/colorout@7ea9440)       
+##  colorspace               1.4-1    2019-03-18 [1] CRAN (R 3.6.0)                           
+##  crayon                   1.3.4    2017-09-16 [1] CRAN (R 3.6.0)                           
+##  curl                     4.3      2019-12-02 [1] CRAN (R 3.6.0)                           
+##  DBI                      1.1.0    2019-12-15 [1] CRAN (R 3.6.0)                           
+##  dbplyr                 * 1.4.2    2019-06-17 [1] CRAN (R 3.6.0)                           
+##  DelayedArray           * 0.12.2   2020-01-06 [1] Bioconductor                             
+##  DelayedMatrixStats       1.8.0    2019-10-29 [1] Bioconductor                             
+##  digest                   0.6.25   2020-02-23 [1] CRAN (R 3.6.0)                           
+##  dplyr                    0.8.5    2020-03-07 [1] CRAN (R 3.6.0)                           
+##  dqrng                    0.2.1    2019-05-17 [1] CRAN (R 3.6.0)                           
+##  DropletUtils           * 1.6.1    2019-10-30 [1] Bioconductor                             
+##  edgeR                    3.28.1   2020-02-26 [1] Bioconductor                             
+##  EnsDb.Hsapiens.v86     * 2.99.0   2020-03-23 [1] Bioconductor                             
+##  ensembldb              * 2.10.2   2019-11-20 [1] Bioconductor                             
+##  evaluate                 0.14     2019-05-28 [1] CRAN (R 3.6.0)                           
+##  ExperimentHub            1.12.0   2019-10-29 [1] Bioconductor                             
+##  fansi                    0.4.1    2020-01-08 [1] CRAN (R 3.6.0)                           
+##  fastmap                  1.0.1    2019-10-08 [1] CRAN (R 3.6.0)                           
+##  GenomeInfoDb           * 1.22.0   2019-10-29 [1] Bioconductor                             
+##  GenomeInfoDbData         1.2.2    2019-10-31 [1] Bioconductor                             
+##  GenomicAlignments        1.22.1   2019-11-12 [1] Bioconductor                             
+##  GenomicFeatures        * 1.38.2   2020-02-15 [1] Bioconductor                             
+##  GenomicRanges          * 1.38.0   2019-10-29 [1] Bioconductor                             
+##  ggbeeswarm               0.6.0    2017-08-07 [1] CRAN (R 3.6.0)                           
+##  ggplot2                * 3.3.0    2020-03-05 [1] CRAN (R 3.6.0)                           
+##  glue                     1.3.2    2020-03-12 [1] CRAN (R 3.6.0)                           
+##  gridExtra                2.3      2017-09-09 [1] CRAN (R 3.6.0)                           
+##  gtable                   0.3.0    2019-03-25 [1] CRAN (R 3.6.0)                           
+##  HDF5Array                1.14.3   2020-02-29 [1] Bioconductor                             
+##  hms                      0.5.3    2020-01-08 [1] CRAN (R 3.6.0)                           
+##  htmltools                0.4.0    2019-10-04 [1] CRAN (R 3.6.0)                           
+##  httpuv                   1.5.2    2019-09-11 [1] CRAN (R 3.6.0)                           
+##  httr                     1.4.1    2019-08-05 [1] CRAN (R 3.6.0)                           
+##  igraph                   1.2.5    2020-03-19 [1] CRAN (R 3.6.0)                           
+##  interactiveDisplayBase   1.24.0   2019-10-29 [1] Bioconductor                             
+##  IRanges                * 2.20.2   2020-01-13 [1] Bioconductor                             
+##  irlba                    2.3.3    2019-02-05 [1] CRAN (R 3.6.0)                           
+##  knitr                    1.28     2020-02-06 [1] CRAN (R 3.6.0)                           
+##  later                    1.0.0    2019-10-04 [1] CRAN (R 3.6.0)                           
+##  lattice                  0.20-40  2020-02-19 [1] CRAN (R 3.6.0)                           
+##  lazyeval                 0.2.2    2019-03-15 [1] CRAN (R 3.6.0)                           
+##  lifecycle                0.2.0    2020-03-06 [1] CRAN (R 3.6.0)                           
+##  limma                    3.42.2   2020-02-03 [1] Bioconductor                             
+##  locfit                   1.5-9.1  2013-04-20 [1] CRAN (R 3.6.0)                           
+##  magrittr                 1.5      2014-11-22 [1] CRAN (R 3.6.0)                           
+##  Matrix                 * 1.2-18   2019-11-27 [1] CRAN (R 3.6.3)                           
+##  matrixStats            * 0.56.0   2020-03-13 [1] CRAN (R 3.6.0)                           
+##  memoise                  1.1.0    2017-04-21 [1] CRAN (R 3.6.0)                           
+##  mime                     0.9      2020-02-04 [1] CRAN (R 3.6.0)                           
+##  munsell                  0.5.0    2018-06-12 [1] CRAN (R 3.6.0)                           
+##  openssl                  1.4.1    2019-07-18 [1] CRAN (R 3.6.0)                           
+##  pillar                   1.4.3    2019-12-20 [1] CRAN (R 3.6.0)                           
+##  pkgconfig                2.0.3    2019-09-22 [1] CRAN (R 3.6.1)                           
+##  prettyunits              1.1.1    2020-01-24 [1] CRAN (R 3.6.2)                           
+##  progress                 1.2.2    2019-05-16 [1] CRAN (R 3.6.0)                           
+##  promises                 1.1.0    2019-10-04 [1] CRAN (R 3.6.0)                           
+##  ProtGenerics             1.18.0   2019-10-29 [1] Bioconductor                             
+##  purrr                    0.3.3    2019-10-18 [1] CRAN (R 3.6.0)                           
+##  R.methodsS3              1.8.0    2020-02-14 [1] CRAN (R 3.6.0)                           
+##  R.oo                     1.23.0   2019-11-03 [1] CRAN (R 3.6.0)                           
+##  R.utils                  2.9.2    2019-12-08 [1] CRAN (R 3.6.1)                           
+##  R6                       2.4.1    2019-11-12 [1] CRAN (R 3.6.1)                           
+##  rappdirs                 0.3.1    2016-03-28 [1] CRAN (R 3.6.0)                           
+##  Rcpp                     1.0.4    2020-03-17 [1] CRAN (R 3.6.0)                           
+##  RCurl                    1.98-1.1 2020-01-19 [1] CRAN (R 3.6.0)                           
+##  rhdf5                    2.30.1   2019-11-26 [1] Bioconductor                             
+##  Rhdf5lib                 1.8.0    2019-10-29 [1] Bioconductor                             
+##  rlang                    0.4.5    2020-03-01 [1] CRAN (R 3.6.0)                           
+##  rmarkdown                2.1      2020-01-20 [1] CRAN (R 3.6.0)                           
+##  Rsamtools                2.2.3    2020-02-23 [1] Bioconductor                             
+##  RSQLite                  2.2.0    2020-01-07 [1] CRAN (R 3.6.0)                           
+##  rsvd                     1.0.3    2020-02-17 [1] CRAN (R 3.6.0)                           
+##  rtracklayer              1.46.0   2019-10-29 [1] Bioconductor                             
+##  S4Vectors              * 0.24.3   2020-01-18 [1] Bioconductor                             
+##  scales                   1.1.0    2019-11-18 [1] CRAN (R 3.6.1)                           
+##  scater                 * 1.14.6   2019-12-16 [1] Bioconductor                             
+##  scran                  * 1.14.6   2020-02-03 [1] Bioconductor                             
+##  scRNAseq               * 2.0.2    2019-11-12 [1] Bioconductor                             
+##  sessioninfo              1.1.1    2018-11-05 [1] CRAN (R 3.6.0)                           
+##  shiny                    1.4.0.2  2020-03-13 [1] CRAN (R 3.6.0)                           
+##  SingleCellExperiment   * 1.8.0    2019-10-29 [1] Bioconductor                             
+##  statmod                  1.4.34   2020-02-17 [1] CRAN (R 3.6.0)                           
+##  stringi                  1.4.6    2020-02-17 [1] CRAN (R 3.6.0)                           
+##  stringr                  1.4.0    2019-02-10 [1] CRAN (R 3.6.0)                           
+##  SummarizedExperiment   * 1.16.1   2019-12-19 [1] Bioconductor                             
+##  tibble                   2.1.3    2019-06-06 [1] CRAN (R 3.6.0)                           
+##  tidyselect               1.0.0    2020-01-27 [1] CRAN (R 3.6.0)                           
+##  vctrs                    0.2.4    2020-03-10 [1] CRAN (R 3.6.0)                           
+##  vipor                    0.4.5    2017-03-22 [1] CRAN (R 3.6.0)                           
+##  viridis                  0.5.1    2018-03-29 [1] CRAN (R 3.6.0)                           
+##  viridisLite              0.3.0    2018-02-01 [1] CRAN (R 3.6.0)                           
+##  withr                    2.1.2    2018-03-15 [1] CRAN (R 3.6.0)                           
+##  xaringan                 0.15     2020-03-04 [1] CRAN (R 3.6.3)                           
+##  xaringanthemer         * 0.2.0    2020-03-22 [1] Github (gadenbuie/xaringanthemer@460f441)
+##  xfun                     0.12     2020-01-13 [1] CRAN (R 3.6.0)                           
+##  XML                      3.99-0.3 2020-01-20 [1] CRAN (R 3.6.0)                           
+##  xtable                   1.8-4    2019-04-21 [1] CRAN (R 3.6.0)                           
+##  XVector                  0.26.0   2019-10-29 [1] Bioconductor                             
+##  yaml                     2.2.1    2020-02-01 [1] CRAN (R 3.6.0)                           
+##  zlibbioc                 1.32.0   2019-10-29 [1] Bioconductor                             
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```

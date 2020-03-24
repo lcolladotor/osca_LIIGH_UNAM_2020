@@ -1,87 +1,60 @@
----
-title: "**Feature Selection**"
-subtitle: "Analyzing **scRNA-seq** data with **Bioconductor** for **LCG-EJ-UNAM** March 2020"  
-author: "[Leonardo Collado-Torres](http://lcolladotor.github.io/)"
-date: '`r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    lib_dir: libs
-    css: xaringan-themer.css
-    nature:
-      highlightStyle: github
-      highlightLines: true
-      countIncrementalSlides: false
-    includes:
-      in_header:
-        - 'gtag.js'
----
-
-```{r setup, include=FALSE}
+## ----setup, include=FALSE--------------------------------------------------------------------------------------------
 options(htmltools.dir.version = FALSE)
-```
 
-```{r xaringan-themer, include=FALSE}
+
+## ----xaringan-themer, include=FALSE----------------------------------------------------------------------------------
 library(xaringanthemer)
 solarized_dark(
   code_font_family = "Fira Code",
   code_font_url    = "https://cdn.rawgit.com/tonsky/FiraCode/1.204/distr/fira_code.css"
 )
-```
-
-class: inverse
-
-.center[
-
-<a href="https://bioconductor.org/"><img src="https://osca.bioconductor.org/cover.png" style="width: 30%"/></a>
-
-<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
-
-<a href='https://clustrmaps.com/site/1b5pl'  title='Visit tracker'><img src='//clustrmaps.com/map_v2.png?cl=ffffff&w=150&t=n&d=tq5q8216epOrQBSllNIKhXOHUHi-i38brzUURkQEiXw'/></a>
-
-]
-
-.footnote[ Download the materials for this course with `usethis::use_course('lcolladotor/osca_LIIGH_UNAM_2020')` or view online at [**lcolladotor.github.io/osca_LIIGH_UNAM_2020**](http://lcolladotor.github.io/osca_LIIGH_UNAM_2020).]
-
-```{css, echo = FALSE}
-/* From https://github.com/yihui/xaringan/issues/147  */
-.scroll-output {
-  height: 80%;
-  overflow-y: scroll;
-}
-
-/* https://stackoverflow.com/questions/50919104/horizontally-scrollable-output-on-xaringan-slides */
-pre {
-  max-width: 100%;
-  overflow-x: scroll;
-}
-
-/* From https://github.com/yihui/xaringan/wiki/Font-Size */
-.tiny{
-  font-size: 40%
-}
-
-/* From https://github.com/yihui/xaringan/wiki/Title-slide */
-.title-slide {
-  background-image: url(https://raw.githubusercontent.com/Bioconductor/OrchestratingSingleCellAnalysis/master/images/Workflow.png);
-  background-size: 33%;
-  background-position: 0% 100%
-}
-```
 
 
----
+## /* From https://github.com/yihui/xaringan/issues/147  */
 
-# Slides by Peter Hickey
+## .scroll-output {
 
-View them [here](https://docs.google.com/presentation/d/19J2FyjKlBQdAkku4Oa6UZ6SA-Y4P7AEKCRIbEQWA9ho/edit#slide=id.ga100bba375887aa_0)
+##   height: 80%;
 
----
+##   overflow-y: scroll;
 
-# Code and output
+## }
 
-.scroll-output[
+## 
+## /* https://stackoverflow.com/questions/50919104/horizontally-scrollable-output-on-xaringan-slides */
 
-```{r all_code, cache=TRUE}
+## pre {
+
+##   max-width: 100%;
+
+##   overflow-x: scroll;
+
+## }
+
+## 
+## /* From https://github.com/yihui/xaringan/wiki/Font-Size */
+
+## .tiny{
+
+##   font-size: 40%
+
+## }
+
+## 
+## /* From https://github.com/yihui/xaringan/wiki/Title-slide */
+
+## .title-slide {
+
+##   background-image: url(https://raw.githubusercontent.com/Bioconductor/OrchestratingSingleCellAnalysis/master/images/Workflow.png);
+
+##   background-size: 33%;
+
+##   background-position: 0% 100%
+
+## }
+
+
+## ----all_code, cache=TRUE--------------------------------------------------------------------------------------------
 library('BiocFileCache')
 bfc <- BiocFileCache()
 raw.path <-
@@ -109,27 +82,9 @@ location <- mapIds(
     column = "SEQNAME",
     keytype = "GENEID"
 )
-```
 
-]
 
----
-
-# Exercises
-
---
-
-* Question 1
-
-???
-
-Solutions
-
----
-
-.scroll-output[
-
-```{r all_code2, cache=TRUE, dependson='all_code'}
+## ----all_code2, cache=TRUE, dependson='all_code'---------------------------------------------------------------------
 # cell-detection
 set.seed(100)
 e.out <- emptyDrops(counts(sce.pbmc))
@@ -148,15 +103,9 @@ set.seed(1000)
 clusters <- quickCluster(sce.pbmc)
 sce.pbmc <- computeSumFactors(sce.pbmc, cluster = clusters)
 sce.pbmc <- logNormCounts(sce.pbmc)
-```
 
-]
 
----
-
-.scroll-output[
-
-```{r all_code3, cache=TRUE, dependson='all_code2'}
+## ----all_code3, cache=TRUE, dependson='all_code2'--------------------------------------------------------------------
 # Illustrative dataset: 416B ---------------------------------------------------
 
 library('scRNAseq')
@@ -195,16 +144,9 @@ sce.416b <- sce.416b[, !qc$discard]
 # normalization
 sce.416b <- computeSumFactors(sce.416b)
 sce.416b <- logNormCounts(sce.416b)
-```
-
-]
 
 
----
-
-.scroll-output[
-
-```{r all_code4, cache=TRUE, dependson='all_code3'}
+## ----all_code4, cache=TRUE, dependson='all_code3'--------------------------------------------------------------------
 # Variance of the log-counts ---------------------------------------------------
 
 dec.pbmc <- modelGeneVar(sce.pbmc)
@@ -221,16 +163,9 @@ curve(fit.pbmc$trend(x),
 
 # Ordering by most interesting genes for inspection.
 dec.pbmc[order(dec.pbmc$bio, decreasing = TRUE), ]
-```
-
-]
 
 
----
-
-.scroll-output[
-
-```{r all_code5, cache=TRUE, dependson='all_code4'}
+## ----all_code5, cache=TRUE, dependson='all_code4'--------------------------------------------------------------------
 # Coefficient of variation -----------------------------------------------------
 
 dec.cv2.pbmc <- modelGeneCV2(sce.pbmc)
@@ -244,15 +179,9 @@ curve(fit.cv2.pbmc$trend(x),
 
 # Ordering by most interesting genes for inspection.
 dec.cv2.pbmc[order(dec.cv2.pbmc$ratio, decreasing = TRUE), ]
-```
 
-]
 
----
-
-.scroll-output[
-
-```{r all_code6, cache=TRUE, dependson='all_code5'}
+## ----all_code6, cache=TRUE, dependson='all_code5'--------------------------------------------------------------------
 # In the presence of spike-ins -------------------------------------------------
 
 dec.spike.416b <- modelGeneVarWithSpikes(sce.416b, "ERCC")
@@ -273,15 +202,9 @@ dec.block.416b <- modelGeneVarWithSpikes(sce.416b, "ERCC",
 dec.block.416b[order(dec.block.416b$bio, decreasing = TRUE), ]
 dec.block.416b$per.block
 dec.block.416b$per.block$X20160113
-```
 
-]
 
----
-
-.scroll-output[
-
-```{r all_code7, cache=TRUE, dependson='all_code6'}
+## ----all_code7, cache=TRUE, dependson='all_code6'--------------------------------------------------------------------
 # Selecting HVGs on the largest metrics ----------------------------------------
 
 # Works with modelGeneVar() output
@@ -296,15 +219,9 @@ str(hvg.416b.var)
 hvg.pbmc.cv2 <- getTopHVGs(dec.cv2.pbmc,
     var.field = "ratio", n = 1000)
 str(hvg.pbmc.cv2)
-```
 
-]
 
----
-
-.scroll-output[
-
-```{r all_code8, cache=TRUE, dependson='all_code7'}
+## ----all_code8, cache=TRUE, dependson='all_code7'--------------------------------------------------------------------
 # Selecting HVGs on statistical significance -----------------------------------
 
 # Works with modelGeneVar() output
@@ -319,15 +236,9 @@ str(hvg.416b.var.2)
 hvg.pbmc.cv2.2 <- getTopHVGs(dec.cv2.pbmc,
     var.field = "ratio", fdr.threshold = 0.05)
 str(hvg.pbmc.cv2.2)
-```
 
-]
 
----
-
-.scroll-output[
-
-```{r all_code9, cache=TRUE, dependson='all_code8'}
+## ----all_code9, cache=TRUE, dependson='all_code8'--------------------------------------------------------------------
 # Selecting genes above the trend as HVGs --------------------------------------
 
 # Works with modelGeneVar() output
@@ -343,15 +254,9 @@ str(hvg.416b.var.3)
 hvg.pbmc.cv2.3 <- getTopHVGs(dec.cv2.pbmc,
     var.field = "ratio", var.threshold = 1)
 str(hvg.pbmc.cv2.2)
-```
 
-]
 
----
-
-.scroll-output[
-
-```{r all_code10, cache=TRUE, dependson='all_code9'}
+## ----all_code10, cache=TRUE, dependson='all_code9'-------------------------------------------------------------------
 # Putting it all together ------------------------------------------------------
 
 dec.pbmc <- modelGeneVar(sce.pbmc)
@@ -376,45 +281,9 @@ sce.pbmc
 altExp(sce.pbmc.hvg, "original") <- sce.pbmc
 sce.pbmc.hvg
 altExp(sce.pbmc.hvg, "original")
-```
-
-]
-
----
-
-class: middle
-
-.center[
-
-# Thanks!
-
-Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan) and themed with [**xaringanthemer**](https://github.com/gadenbuie/xaringanthemer).
-
-This course is based on the book [**Orchestrating Single Cell Analysis with Bioconductor**](https://osca.bioconductor.org/) by [Aaron Lun](https://www.linkedin.com/in/aaron-lun-869b5894/), [Robert Amezquita](https://robertamezquita.github.io/), [Stephanie Hicks](https://www.stephaniehicks.com/) and [Raphael Gottardo](http://rglab.org), plus [**WEHI's scRNA-seq course**](https://drive.google.com/drive/folders/1cn5d-Ey7-kkMiex8-74qxvxtCQT6o72h) by [Peter Hickey](https://www.peterhickey.org/).
 
 
-You can find the files for this course at [lcolladotor/osca_LIIGH_UNAM_2020](https://github.com/lcolladotor/osca_LIIGH_UNAM_2020). 
-
-Instructor: [**Leonardo Collado-Torres**](http://lcolladotor.github.io/).
-
-<a href="https://www.libd.org"><img src="img/LIBD_logo.jpg" style="width: 20%" /></a>
-
-]
-
-.footnote[ Download the materials for this course with `usethis::use_course('lcolladotor/osca_LIIGH_UNAM_2020')` or view online at [**lcolladotor.github.io/osca_LIIGH_UNAM_2020**](http://lcolladotor.github.io/osca_LIIGH_UNAM_2020).]
-
----
-
-# R session information
-
-
-.scroll-output[
-.tiny[
-
-```{r 'reproducibility', cache = TRUE, dependson=knitr::all_labels()}
+## ----'reproducibility', cache = TRUE, dependson=knitr::all_labels()--------------------------------------------------
 options(width = 120)
 sessioninfo::session_info()
-```
 
-
-]]
