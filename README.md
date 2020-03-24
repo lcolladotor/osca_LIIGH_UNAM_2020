@@ -124,6 +124,18 @@ if(R.home() == '/cm/shared/apps/r/3.6.1-studio/lib64/R') {
 If you are using RStudio through Cyberduck or something like that, you
 could use `usethis::edit_r_profile()`.
 
+Now, to avoid having to download the data many times, you can use the
+data I downloaded by editing/creating a `~/.Renviron` file with the
+following contents:
+
+``` bash
+## Note that it has to have an empty line at the end
+
+## For using Leo's Bioconductor cached' files
+EXPERIMENT_HUB_CACHE="/mnt/Genoma/amedina/lcollado/BiocHubCache"
+ANNOTATION_HUB_CACHE="/mnt/Genoma/amedina/lcollado/BiocHubCache"
+```
+
 To test that it works, run:
 
 ``` bash
