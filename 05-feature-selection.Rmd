@@ -115,18 +115,6 @@ location <- mapIds(
 
 ---
 
-# Exercises
-
---
-
-* Question 1
-
-???
-
-Solutions
-
----
-
 .scroll-output[
 
 ```{r all_code2, cache=TRUE, dependson='all_code'}
@@ -151,6 +139,29 @@ sce.pbmc <- logNormCounts(sce.pbmc)
 ```
 
 ]
+
+---
+
+# Exercises
+
+--
+
+* How did we determine which genes were mitochondrial?
+
+--
+
+* How did we decide to filter cells?
+
+--
+
+* Can you explain how we normalized the data?
+
+???
+
+* Ensembl v86 for Human
+* We used the output from both `emptyDrops()` with an FDR threshold of 0.1% and the 3 MAD filter on mitochondrial expression.
+* We found some quick clusters for the cells and used that information for computing the sum factors.
+
 
 ---
 
@@ -199,6 +210,29 @@ sce.416b <- logNormCounts(sce.416b)
 
 ]
 
+---
+
+# Exercises
+
+--
+
+* How did we determine which genes were mitochondrial?
+
+--
+
+* How did we decide to filter cells?
+
+--
+
+* Can you explain how we normalized the data?
+
+???
+
+* Ensembl v87 for mouse
+* We used the 3 MAD filter on mitochondrial expression as well as for the ERCC expression percent taking into account the sequencing batch.
+* We computing the library size factors with default parameters without any extra work.
+
+
 
 ---
 
@@ -224,6 +258,42 @@ dec.pbmc[order(dec.pbmc$bio, decreasing = TRUE), ]
 ```
 
 ]
+
+---
+
+# Exercises
+
+--
+
+* What type of object did `modelGeneVar()` return?
+
+--
+
+* Is `dec.pbmc` a table? Or does it contain extra information?
+
+--
+
+* What type of object is `fit.pbmc` and what named objects does it contain?
+
+--
+
+* What type of object is `fit.pbmc$trend`?
+
+--
+
+* Where can we find more details about this function?
+
+--
+
+???
+
+Solutions
+
+* A `DFrame`
+* No, it contains more information inside `metadata(dec.pbmc)`
+* `class(metadata(dec.pbmc))` and `sapply(metadata(dec.pbmc), class)`
+* A function
+* Check `?fitTrendVar` and ultimately look at the source code https://github.com/MarioniLab/scran/blob/master/R/fitTrendVar.R
 
 
 ---
@@ -275,6 +345,19 @@ dec.block.416b$per.block
 dec.block.416b$per.block$X20160113
 ```
 
+---
+
+# Exercises
+
+--
+
+* What type of object is `dec.block.416b$per.block`?
+
+???
+
+* `class(dec.block.416b$per.block)` A `DataFrame` with 2 columns, each of which are also `DataFrame`s
+
+
 ]
 
 ---
@@ -302,6 +385,51 @@ str(hvg.pbmc.cv2)
 
 ---
 
+# Exercises
+
+--
+
+* What percent of the HVG genes overlap across the two sets pbmc sets?
+
+--
+
+* Bonus: make a venn diagram of the 2 sets of pbmc HVGs
+
+???
+
+* `table(hvg.pbmc.var %in% hvg.pbmc.cv2)`
+
+---
+
+.scroll-output[
+
+* Search code written by others, for example: https://github.com/LieberInstitute/brainseq_phase2/search?p=2&q=venn&unscoped_q=venn
+
+```{r all_code7b, cache=TRUE, dependson='all_code7', warning=FALSE}
+if (!requireNamespace("gplots", quietly = TRUE))
+    install.packages("gplots")
+
+if (!requireNamespace("VennDiagram", quietly = TRUE))
+    BiocManager::install("VennDiagram")
+
+## Quick and simple venn diagram
+gplots::venn(list('var' = hvg.pbmc.var, 'cv2' = hvg.pbmc.cv2))
+
+## Fancier one
+v <- VennDiagram::venn.diagram(
+    list('var' = hvg.pbmc.var, 'cv2' = hvg.pbmc.cv2),
+    filename = NULL,
+    fill = c('forest green', 'orange')
+    
+)
+grid::grid.newpage()
+grid::grid.draw(v)
+```
+
+]
+
+---
+
 .scroll-output[
 
 ```{r all_code8, cache=TRUE, dependson='all_code7'}
@@ -322,6 +450,23 @@ str(hvg.pbmc.cv2.2)
 ```
 
 ]
+
+---
+
+# Exercises
+
+--
+
+* Which list of pbmc HVGs is longer?
+
+--
+
+* Make a venn diagram of the pbmc lists.
+
+???
+
+* hvg.pbmc.cv2.2
+
 
 ---
 
@@ -379,6 +524,19 @@ altExp(sce.pbmc.hvg, "original")
 ```
 
 ]
+
+---
+
+# Exercises
+
+--
+
+* How did we tell `runPCA()` which were the highly variable genes?
+
+???
+
+* Through the `subset_row` argument.
+
 
 ---
 

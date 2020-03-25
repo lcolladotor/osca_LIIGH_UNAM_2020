@@ -4,7 +4,7 @@
     <title>Feature Selection</title>
     <meta charset="utf-8" />
     <meta name="author" content="Leonardo Collado-Torres" />
-    <meta name="date" content="2020-03-23" />
+    <meta name="date" content="2020-03-25" />
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-161558379-1"></script>
     <script>
@@ -23,7 +23,7 @@ class: center, middle, inverse, title-slide
 # <strong>Feature Selection</strong>
 ## Analyzing <strong>scRNA-seq</strong> data with <strong>Bioconductor</strong> for <strong>LCG-EJ-UNAM</strong> March 2020
 ### <a href="http://lcolladotor.github.io/">Leonardo Collado-Torres</a>
-### 2020-03-23
+### 2020-03-25
 
 ---
 
@@ -314,18 +314,6 @@ location &lt;- mapIds(
 
 ---
 
-# Exercises
-
---
-
-* Question 1
-
-???
-
-Solutions
-
----
-
 .scroll-output[
 
 
@@ -359,6 +347,29 @@ sce.pbmc &lt;- logNormCounts(sce.pbmc)
 ```
 
 ]
+
+---
+
+# Exercises
+
+--
+
+* How did we determine which genes were mitochondrial?
+
+--
+
+* How did we decide to filter cells?
+
+--
+
+* Can you explain how we normalized the data?
+
+???
+
+* Ensembl v86 for Human
+* We used the output from both `emptyDrops()` with an FDR threshold of 0.1% and the 3 MAD filter on mitochondrial expression.
+* We found some quick clusters for the cells and used that information for computing the sum factors.
+
 
 ---
 
@@ -478,6 +489,29 @@ sce.416b &lt;- logNormCounts(sce.416b)
 
 ]
 
+---
+
+# Exercises
+
+--
+
+* How did we determine which genes were mitochondrial?
+
+--
+
+* How did we decide to filter cells?
+
+--
+
+* Can you explain how we normalized the data?
+
+???
+
+* Ensembl v87 for mouse
+* We used the 3 MAD filter on mitochondrial expression as well as for the ERCC expression percent taking into account the sequencing batch.
+* We computing the library size factors with default parameters without any extra work.
+
+
 
 ---
 
@@ -538,6 +572,42 @@ dec.pbmc[order(dec.pbmc$bio, decreasing = TRUE), ]
 ```
 
 ]
+
+---
+
+# Exercises
+
+--
+
+* What type of object did `modelGeneVar()` return?
+
+--
+
+* Is `dec.pbmc` a table? Or does it contain extra information?
+
+--
+
+* What type of object is `fit.pbmc` and what named objects does it contain?
+
+--
+
+* What type of object is `fit.pbmc$trend`?
+
+--
+
+* Where can we find more details about this function?
+
+--
+
+???
+
+Solutions
+
+* A `DFrame`
+* No, it contains more information inside `metadata(dec.pbmc)`
+* `class(metadata(dec.pbmc))` and `sapply(metadata(dec.pbmc), class)`
+* A function
+* Check `?fitTrendVar` and ultimately look at the source code https://github.com/MarioniLab/scran/blob/master/R/fitTrendVar.R
 
 
 ---
@@ -814,6 +884,19 @@ dec.block.416b$per.block$X20160113
 ## CBFB-MYH11-mcherry    2.90101852039123                 0                 0
 ```
 
+---
+
+# Exercises
+
+--
+
+* What type of object is `dec.block.416b$per.block`?
+
+???
+
+* `class(dec.block.416b$per.block)` A `DataFrame` with 2 columns, each of which are also `DataFrame`s
+
+
 ]
 
 ---
@@ -858,6 +941,58 @@ str(hvg.pbmc.cv2)
 
 ---
 
+# Exercises
+
+--
+
+* What percent of the HVG genes overlap across the two sets pbmc sets?
+
+--
+
+* Bonus: make a venn diagram of the 2 sets of pbmc HVGs
+
+???
+
+* `table(hvg.pbmc.var %in% hvg.pbmc.cv2)`
+
+---
+
+.scroll-output[
+
+* Search code written by others, for example: https://github.com/LieberInstitute/brainseq_phase2/search?p=2&amp;q=venn&amp;unscoped_q=venn
+
+
+```r
+if (!requireNamespace("gplots", quietly = TRUE))
+    install.packages("gplots")
+
+if (!requireNamespace("VennDiagram", quietly = TRUE))
+    BiocManager::install("VennDiagram")
+
+## Quick and simple venn diagram
+gplots::venn(list('var' = hvg.pbmc.var, 'cv2' = hvg.pbmc.cv2))
+```
+
+![](05-feature-selection_files/figure-html/all_code7b-1.png)&lt;!-- --&gt;
+
+```r
+## Fancier one
+v &lt;- VennDiagram::venn.diagram(
+    list('var' = hvg.pbmc.var, 'cv2' = hvg.pbmc.cv2),
+    filename = NULL,
+    fill = c('forest green', 'orange')
+    
+)
+grid::grid.newpage()
+grid::grid.draw(v)
+```
+
+![](05-feature-selection_files/figure-html/all_code7b-2.png)&lt;!-- --&gt;
+
+]
+
+---
+
 .scroll-output[
 
 
@@ -896,6 +1031,23 @@ str(hvg.pbmc.cv2.2)
 ```
 
 ]
+
+---
+
+# Exercises
+
+--
+
+* Which list of pbmc HVGs is longer?
+
+--
+
+* Make a venn diagram of the pbmc lists.
+
+???
+
+* hvg.pbmc.cv2.2
+
 
 ---
 
@@ -1048,6 +1200,19 @@ altExp(sce.pbmc.hvg, "original")
 
 ---
 
+# Exercises
+
+--
+
+* How did we tell `runPCA()` which were the highly variable genes?
+
+???
+
+* Through the `subset_row` argument.
+
+
+---
+
 class: middle
 
 .center[
@@ -1094,7 +1259,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/New_York            
-##  date     2020-03-23                  
+##  date     2020-03-25                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 ##  package                * version  date       lib source                                   
@@ -1118,6 +1283,7 @@ sessioninfo::session_info()
 ##  bit64                    0.9-7    2017-05-08 [1] CRAN (R 3.6.0)                           
 ##  bitops                   1.0-6    2013-08-17 [1] CRAN (R 3.6.0)                           
 ##  blob                     1.2.1    2020-01-20 [1] CRAN (R 3.6.0)                           
+##  caTools                  1.18.0   2020-01-17 [1] CRAN (R 3.6.0)                           
 ##  cli                      2.0.2    2020-02-28 [1] CRAN (R 3.6.0)                           
 ##  codetools                0.2-16   2018-12-24 [1] CRAN (R 3.6.3)                           
 ##  colorout               * 1.2-1    2019-05-07 [1] Github (jalvesaq/colorout@7ea9440)       
@@ -1139,6 +1305,10 @@ sessioninfo::session_info()
 ##  ExperimentHub            1.12.0   2019-10-29 [1] Bioconductor                             
 ##  fansi                    0.4.1    2020-01-08 [1] CRAN (R 3.6.0)                           
 ##  fastmap                  1.0.1    2019-10-08 [1] CRAN (R 3.6.0)                           
+##  formatR                  1.7      2019-06-11 [1] CRAN (R 3.6.0)                           
+##  futile.logger            1.4.3    2016-07-10 [1] CRAN (R 3.6.0)                           
+##  futile.options           1.0.1    2018-04-20 [1] CRAN (R 3.6.0)                           
+##  gdata                    2.18.0   2017-06-06 [1] CRAN (R 3.6.0)                           
 ##  GenomeInfoDb           * 1.22.0   2019-10-29 [1] Bioconductor                             
 ##  GenomeInfoDbData         1.2.2    2019-10-31 [1] Bioconductor                             
 ##  GenomicAlignments        1.22.1   2019-11-12 [1] Bioconductor                             
@@ -1147,8 +1317,10 @@ sessioninfo::session_info()
 ##  ggbeeswarm               0.6.0    2017-08-07 [1] CRAN (R 3.6.0)                           
 ##  ggplot2                * 3.3.0    2020-03-05 [1] CRAN (R 3.6.0)                           
 ##  glue                     1.3.2    2020-03-12 [1] CRAN (R 3.6.0)                           
+##  gplots                   3.0.3    2020-02-25 [1] CRAN (R 3.6.0)                           
 ##  gridExtra                2.3      2017-09-09 [1] CRAN (R 3.6.0)                           
 ##  gtable                   0.3.0    2019-03-25 [1] CRAN (R 3.6.0)                           
+##  gtools                   3.8.1    2018-06-26 [1] CRAN (R 3.6.0)                           
 ##  HDF5Array                1.14.3   2020-02-29 [1] Bioconductor                             
 ##  hms                      0.5.3    2020-01-08 [1] CRAN (R 3.6.0)                           
 ##  htmltools                0.4.0    2019-10-04 [1] CRAN (R 3.6.0)                           
@@ -1158,7 +1330,9 @@ sessioninfo::session_info()
 ##  interactiveDisplayBase   1.24.0   2019-10-29 [1] Bioconductor                             
 ##  IRanges                * 2.20.2   2020-01-13 [1] Bioconductor                             
 ##  irlba                    2.3.3    2019-02-05 [1] CRAN (R 3.6.0)                           
+##  KernSmooth               2.23-16  2019-10-15 [1] CRAN (R 3.6.3)                           
 ##  knitr                    1.28     2020-02-06 [1] CRAN (R 3.6.0)                           
+##  lambda.r                 1.2.4    2019-09-18 [1] CRAN (R 3.6.0)                           
 ##  later                    1.0.0    2019-10-04 [1] CRAN (R 3.6.0)                           
 ##  lattice                  0.20-40  2020-02-19 [1] CRAN (R 3.6.0)                           
 ##  lazyeval                 0.2.2    2019-03-15 [1] CRAN (R 3.6.0)                           
@@ -1192,6 +1366,7 @@ sessioninfo::session_info()
 ##  rmarkdown                2.1      2020-01-20 [1] CRAN (R 3.6.0)                           
 ##  Rsamtools                2.2.3    2020-02-23 [1] Bioconductor                             
 ##  RSQLite                  2.2.0    2020-01-07 [1] CRAN (R 3.6.0)                           
+##  rstudioapi               0.11     2020-02-07 [1] CRAN (R 3.6.0)                           
 ##  rsvd                     1.0.3    2020-02-17 [1] CRAN (R 3.6.0)                           
 ##  rtracklayer              1.46.0   2019-10-29 [1] Bioconductor                             
 ##  S4Vectors              * 0.24.3   2020-01-18 [1] Bioconductor                             
@@ -1209,6 +1384,7 @@ sessioninfo::session_info()
 ##  tibble                   2.1.3    2019-06-06 [1] CRAN (R 3.6.0)                           
 ##  tidyselect               1.0.0    2020-01-27 [1] CRAN (R 3.6.0)                           
 ##  vctrs                    0.2.4    2020-03-10 [1] CRAN (R 3.6.0)                           
+##  VennDiagram              1.6.20   2018-03-28 [1] CRAN (R 3.6.0)                           
 ##  vipor                    0.4.5    2017-03-22 [1] CRAN (R 3.6.0)                           
 ##  viridis                  0.5.1    2018-03-29 [1] CRAN (R 3.6.0)                           
 ##  viridisLite              0.3.0    2018-02-01 [1] CRAN (R 3.6.0)                           
